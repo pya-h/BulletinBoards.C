@@ -20,12 +20,13 @@ struct User {
     unsigned short loggedIn; // if the user is logged in or logined,
     // it can be checked by this flag
     
+    long currentBoardId, currentListId;
 };
 
 typedef struct User User;
 
 // prototypes:
-User *NewUser();
+User *newUser();
 User *registerUser(char username[], char password[]); // regitserUser 
 User *loginUser(char username[], char password[]); // loginUser
 char *validateRegisterationInput(char inputUser[], char inputPassword[]);

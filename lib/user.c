@@ -4,15 +4,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-User *NewUser() {
+User *newUser() {
     User *user = (User *) calloc(sizeof(User), 1);
     user->loggedIn = 0;
+    user->currentBoardId = user->currentListId = 0;
     return user;
 }
 
 User *registerUser(char username[], char password[]) {
 
-    User *user = NewUser();
+    User *user = newUser();
     // create the user
     time_t now = time(NULL);
 
@@ -44,7 +45,7 @@ User *registerUser(char username[], char password[]) {
 
 
 User *loginUser(char username[], char password[]) {
-    User *user = NewUser(); // user is loggod out by default
+    User *user = newUser(); // user is loggod out by default
     // create the user
     strcpy(user->name, username);
 
