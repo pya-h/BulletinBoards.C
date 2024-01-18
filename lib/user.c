@@ -4,13 +4,17 @@
 #include <stdlib.h>
 #include <time.h>
 
-User *newUser()
+void resetUser(User *user)
 {
-    User *user = (User *)calloc(sizeof(User), 1);
     user->id = 0;
     user->loggedIn = 0;
     user->currentBoardId = user->currentListId = 0;
+}
 
+User *newUser()
+{
+    User *user = (User *)calloc(sizeof(User), 1);
+    resetUser(user);
     return user;
 }
 
@@ -42,7 +46,7 @@ User *registerUser(char username[], char password[])
         {
             // TODO: maybe folder doesnt exist!
             fprintf(stderr, "Cannot save user credentials!");
-            user->loggedIn = 0; // for making sure user is not logged in without data stored in Data
+                resetUser(user);// for making sure user is not logged in without data stored in Data
         }
         // close the file
         fclose(userFile);
@@ -50,8 +54,7 @@ User *registerUser(char username[], char password[])
     else
     {
         // ERROR:
-        user->id = 0; // identifier of failure
-        user->location[0] = '\0'; // no location because user is not saved locally
+        resetUser(user);           // identifier of failure
         fprintf(stderr, "Cannot assign an id to you!");
     }
 
@@ -77,8 +80,10 @@ User *loginUser(char username[], char password[])
             // if passwords are equal then login
             user->loggedIn = 1;
         }
-    } else {
-        user->location[0] = '\0';
+    }
+    else
+    {
+        resetUser(user); // identifier of error is an empty user
     }
     // else user will remain logged out ...
     // close the file
