@@ -2,7 +2,7 @@
 #define USER_H
 #include "base.h"
 
-#define FOLDER_USERS "users"
+#define FOLDER_USERS "Users"
 #define MAX_USERNAME_LENGTH 64
 #define MAX_PASSWORD_LENGTH 20
 
@@ -21,6 +21,7 @@ struct User {
     // it can be checked by this flag
     
     long currentBoardId, currentListId;
+    
 };
 
 typedef struct User User;

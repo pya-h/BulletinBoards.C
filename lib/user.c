@@ -8,6 +8,7 @@ User *newUser() {
     User *user = (User *) calloc(sizeof(User), 1);
     user->loggedIn = 0;
     user->currentBoardId = user->currentListId = 0;
+
     return user;
 }
 
@@ -29,17 +30,21 @@ User *registerUser(char username[], char password[]) {
     // Save credentials into a file
 
     SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
+    // TODO: Create Data folders if not exist
+    
     FILE *userFile = fopen(user->location, "w");
     if(userFile) {
 
         fprintf(userFile, "%s\n%ld", password, user->id); // username is the filename
         // password will not be stored in user and will only be used for login purposes;
+        user->loggedIn = 1;
     } else {
+        // TODO: maybe folder doesnt exist!
         fprintf(stderr, "Cannot save user credentials!");
+        user->loggedIn = 0; // for making sure user is not logged in without data stored in Data
     }
     // close the file
     fclose(userFile);
-    user->loggedIn = 1;
     return user;
 }
 

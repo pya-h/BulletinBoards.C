@@ -2,7 +2,7 @@
 #define BOARD_H
 #include "base.h"
 
-#define FOLDER_Boards "Boards"
+#define FOLDER_BOARDS "Boards"
 #define MAX_BOARD_NAME_LENGTH 64
 
 struct Board {

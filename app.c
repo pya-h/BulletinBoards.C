@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include "lib/base.h"
 #include "lib/user.h"
+#include "lib/board.h"
 
 // authentication options
 #define MENU_LOGIN_ATTEMPT 1
@@ -10,6 +12,7 @@
 #define MENU_CREATE_BOARD 2
 #define MENU_DELETE_BOARD 2
 
+void prepareDataFolders();
 User *authenticationAttempt(short);
 short authenticationMenu();
 short boardsMenu();
@@ -17,6 +20,7 @@ short boardsMenu();
 int main() {
     User *u = newUser(); // U as for 'you'/username
     short choice;
+    prepareDataFolders();
     while(1) {
         CLEAR_SCREEN();
         if(u->loggedIn) {
@@ -48,6 +52,15 @@ int main() {
     }
 }
 
+void prepareDataFolders() {
+    // will make sure all folders are created & ready to hold info.
+    const short numberOfFolders = 2;
+    char *folders[] = {FOLDER_USERS, FOLDER_BOARDS};
+    prepareFolder(FOLDER_DATA, 0); // Create the data folder itself
+    for(short i = 0; i < numberOfFolders; i++) {
+        prepareFolder(folders[i], 1); // 1 means create the folder inside data folder
+    }
+}
 short authenticationMenu() {
     CLEAR_SCREEN();
     printf("\nHello there! How can I help you?\n");
