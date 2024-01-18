@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 void resetBoard(Board *board)
 {
@@ -39,13 +40,14 @@ Board *createBoard(long ownerId, char title[])
         FILE *boardFile = fopen(board->location, "a");
         if (boardFile)
         {
-            fprintf("%ld\n%s\n", board->id, board->title); // append new board to file
+            fprintf(boardFile, "%ld\n%s\n", board->id, board->title); // append new board to file
         }
         else
         {
             fprintf(stderr, "Cannot save board data!");
             resetBoard(board); // return an empty board again, as an identification of error!
         }
+        fclose(boardFile);
     }
     else
     {
@@ -54,4 +56,36 @@ Board *createBoard(long ownerId, char title[])
         fprintf(stderr, "Cannot assign id to this new board!");
     }
     return board;
+}
+
+List *getBoards(long ownerId)
+{
+    // read all the boards from the file
+    List *boards = newList();
+    char boardFilename[MAX_FILENAME_LENGTH] = {'\0'};
+    SET_DATA_FILE(boardFilename, FOLDER_BOARDS, ownerId); // now boardFile contains the address of the board file that contains desired user board list ata.
+    FILE *boardFile = fopen(boardFilename, "r");
+    if (boardFile)
+    {
+
+        for (Board *nextBoard = newBoard(); !feof(boardFile); nextBoard = newBoard())
+        {
+            // each board occupies to lines
+            // first line is its id and the second is the title
+            fscanf(boardFile, "%ld", nextBoard->id);
+            // the title of the board may contain spaces; using fscanf will ignore what comes after the space!
+            fgets(nextBoard->title, MAX_TITLE_LENGTH, boardFile);
+            // fgets returns current line of the file, containing ['\n'] next line character;
+            removeNextlineCharacter(nextBoard->title);
+
+            // nextBoard on each step of the loop, will be used to read board data;
+            // then the memory it points to will be added as the boards list item,
+            // then nextBoard will occupy a new place on memory
+            List_add(boards, nextBoard);
+        }
+    } else {
+        fprintf(stderr, "Cannot open boards file!");
+    }
+    fclose(boardFile);
+    return boards;
 }

@@ -3,13 +3,13 @@
 #include "base.h"
 
 #define FOLDER_USERS "Users"
-#define MAX_USERNAME_LENGTH 64
+#define MAX_USERNAME_LENGTH 32
 #define MAX_PASSWORD_LENGTH 20
 
 // #define MAX_ENCRYPTED_PASSWORD_LENGTH 40
 // #define PASSWORD_SALT "abXN_H-d!~"
 
-struct User
+typedef struct User
 {
     long id; // will be set by the current time value
     // id will be used for ownership of other items (such as tasks)
@@ -22,9 +22,7 @@ struct User
     // it can be checked by this flag
 
     long currentBoardId, currentListId;
-};
-
-typedef struct User User;
+} User;
 
 // prototypes:
 User *newUser();
