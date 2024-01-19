@@ -17,13 +17,17 @@ User *authenticationAttempt(short);
 short authenticationMenu();
 short boardsMenu();
 short createNewBoardSection(long);
+short selectBoardMenu(List *);
 
+// THINK: write a professional getch() ?
+// TODO: this one will count the number of options and gets key until the max length/count
 int main()
 {
     User *u = newUser(); // U as for 'you'/username
     short choice;
     prepareDataFolders();
-
+    printf("%d", !0);
+    PRESS_KEY_TO_CONTINUE();
     while (1)
     {
         CLEAR_SCREEN();
@@ -47,12 +51,7 @@ int main()
                     break;
                 case MENU_VIEW_BOARDS:
                     boards = getBoards(u->id);
-                    printf("%d", boards->length);
-                    for (int i = 0; i < boards->length; i++)
-                    {
-                        Board *b = List_at(boards, i);
-                        printf("\n%ld\t%s", b->id, b->title);
-                    }
+                    choice = selectBoardMenu(boards);
                     break;
                 }
             }
@@ -91,12 +90,13 @@ void prepareDataFolders()
         prepareFolder(folders[i], 1); // 1 means create the folder inside data folder
     }
 }
+// ** Section: Users **
 short authenticationMenu()
 {
     CLEAR_SCREEN();
     printf("\nHello there! How can I help you?\n");
     PRINT_DASH_ROW();
-    printf("\t%d Login\n\t%d Register ", MENU_LOGIN_ATTEMPT, MENU_REGISTERATION_ATTEMPT);
+    printf("\t%d\tLogin\n\t%d\tRegister ", MENU_LOGIN_ATTEMPT, MENU_REGISTERATION_ATTEMPT);
     return GET_KEY();
 }
 
@@ -104,12 +104,10 @@ User *authenticationAttempt(short attemptType)
 {
     // attemptType: 0 login
     // attemptType: 1 registeration
-    printf("\n%s:\n", attemptType == MENU_REGISTERATION_ATTEMPT ? "Registeration" : "Login");
-    char username[MAX_USERNAME_LENGTH], password[MAX_PASSWORD_LENGTH];
-    printf("\tUsername: ");
-    gets(username);
-    printf("\tPassword: ");
-    gets(password);
+    printf("\n\n%s:", attemptType == MENU_REGISTERATION_ATTEMPT ? "Registeration" : "Login");
+    char username[MAX_USERNAME_LENGTH] = {'\0'}, password[MAX_PASSWORD_LENGTH] = {'\0'};
+    getLine(username, "\tUsername:\t");
+    getLine(password, "\tPassword:\t");
     if (attemptType == MENU_REGISTERATION_ATTEMPT)
     {
         char *validatonResult = validateRegisterationInput(username, password);
@@ -121,19 +119,36 @@ User *authenticationAttempt(short attemptType)
     return attemptType == MENU_REGISTERATION_ATTEMPT ? registerUser(username, password) : loginUser(username, password);
 }
 
+// ** Section: Boards **
 short boardsMenu()
 {
     printf("\nHow can I help you?\n");
     PRINT_DASH_ROW();
-    printf("\t%d View Boards\n\t%d Create New Board\n\t%d Delete Board ", MENU_VIEW_BOARDS, MENU_CREATE_BOARD, MENU_DELETE_BOARD);
+    printf("\t%d\tView Boards\n\t%d\tCreate New Board\n\t%d\tDelete Board ", MENU_VIEW_BOARDS, MENU_CREATE_BOARD, MENU_DELETE_BOARD);
     return GET_KEY();
 }
 
 short createNewBoardSection(long ownerId)
 {
     char title[MAX_TITLE_LENGTH] = {'\0'};
-    printf("\nNew Board:\n\tTitle: ");
-    gets(title);
+    printf("\n\nNew Board:");
+
+    getLine(title, "\tTitle:\t");
     Board *board = createBoard(ownerId, title);
     return board->id && board->location; // id and location for failure are set to NULL, so this conditiion will check if there wasnt any error at all.
+}
+
+short selectBoardMenu(List *boards)
+{
+    short choice;
+    CLEAR_SCREEN();
+    printf("\nWhich board you want to see? [Select & Hit Enter]\n");
+    PRINT_DASH_ROW();
+    for (int i = 0; i < boards->length; i++)
+    {
+        Board *board = List_at(boards, i);
+        printf("\n\t%2d\t%s ", i + 1, board->title);
+    }
+    scanf("%hd", &choice);
+    return choice;
 }

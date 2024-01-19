@@ -12,7 +12,7 @@ void resetBoard(Board *board)
 
 Board *newBoard()
 {
-    Board *board = (Board *)calloc(sizeof(Board), 1);
+    Board *board = (Board *)calloc(1, sizeof(Board));
     board->location[0] = '\0';
     board->id = board->ownerId = 0;
     return board;
@@ -72,7 +72,9 @@ List *getBoards(long ownerId)
         {
             // each board occupies to lines
             // first line is its id and the second is the title
-            fscanf(boardFile, "%ld", nextBoard->id);
+            fscanf(boardFile, "%ld\n", &nextBoard->id);
+            if(!nextBoard->id)
+                break;
             // the title of the board may contain spaces; using fscanf will ignore what comes after the space!
             fgets(nextBoard->title, MAX_TITLE_LENGTH, boardFile);
             // fgets returns current line of the file, containing ['\n'] next line character;

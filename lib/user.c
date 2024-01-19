@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+
 void resetUser(User *user)
 {
     user->id = 0;
@@ -13,7 +15,7 @@ void resetUser(User *user)
 
 User *newUser()
 {
-    User *user = (User *)calloc(sizeof(User), 1);
+    User *user = (User *)calloc(1, sizeof(User));
     resetUser(user);
     return user;
 }
@@ -38,7 +40,7 @@ User *registerUser(char username[], char password[])
         if (userFile)
         {
 
-            fprintf(userFile, "%s\n%ld\n", password, user->id); // username is the filename
+            fprintf(userFile, "%s\n%d\n", encodeString(password) , user->id); // save password and id as encoded
             // password will not be stored in user and will only be used for login purposes;
             user->loggedIn = 1;
         }
@@ -73,9 +75,9 @@ User *loginUser(char username[], char password[])
     if (userFile)
     {
         // if the user exists
-        char actualPassword[MAX_PASSWORD_LENGTH];
-        fscanf(userFile, "%s %ld", actualPassword, &user->id);
-        if (!strcmp(password, actualPassword))
+        char *savedPassword = (char *)calloc(MAX_ENCODED_STRING_LENGTH(MAX_PASSWORD_LENGTH), sizeof(char));
+        fscanf(userFile, "%s %d", savedPassword, &user->id);
+        if (!strcmp(encodeString(password), savedPassword))
         {
             // if passwords are equal then login
             user->loggedIn = 1;

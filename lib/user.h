@@ -6,9 +6,6 @@
 #define MAX_USERNAME_LENGTH 32
 #define MAX_PASSWORD_LENGTH 20
 
-// #define MAX_ENCRYPTED_PASSWORD_LENGTH 40
-// #define PASSWORD_SALT "abXN_H-d!~"
-
 typedef struct User
 {
     long id; // will be set by the current time value
