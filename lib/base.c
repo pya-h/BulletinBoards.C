@@ -71,11 +71,16 @@ ListItem *newListItem(void *data)
 List *newList()
 {
     List *list = (List *)calloc(1, sizeof(List));
+    resetList(list);
+    return list;
+}
+
+void *resetList(List *list)
+{
     list->first = list->last = NULL;
     list->length = 0;
-    list->lastAccessedIndex = 0;
+    list->lastAccessedIndex = -1;
     list->lastAccessedItem = NULL;
-    return list;
 }
 
 ListItem *List_add(List *list, void *data)
@@ -110,15 +115,17 @@ void *List_at(List *list, long index)
         index += list->length;
 
     // these 3 conditions may seem redundant; but when accessing wrong item, or first/last item, it prevents unnessary calculations and condition checks.
-    if (index >= list->length)
+    if (index < 0 || // means the negative index is way greater than the actual length
+        index >= list->length)
         return NULL; // Not found
-    else if (!index)
+    if (!index)
         return list->first->data;
-    else if (index == list->length - 1)
+    if (index == list->length - 1)
         return list->last->data;
 
     // just in a lucky case that a item is access again rapidly, or is near previous accessed item, use this section
-    if (list->lastAccessedIndex && list->lastAccessedItem)
+    if (list->lastAccessedIndex >= 0 && list->lastAccessedItem // if there was a cash index, use it if it helps to find item fast
+        && list->lastAccessedIndex < list->length) // this condition is just for double checking that lastItemIndex value is correct
     {
         if (index == list->lastAccessedIndex)
             return list->lastAccessedItem->data;
@@ -150,9 +157,46 @@ void *List_at(List *list, long index)
     return item->data;
 }
 
+void ListItem_dump(ListItem *trash)
+{
+    trash->next = trash->prev = NULL;
+    free(trash);
+}
+
 short *List_delete(List *list, long index)
 {
     // TODO:
+    if (!List_at(list, index)) // updates .lastAccessedItem and .lastAccessedIdex
+        return 0;              // item was not found so dont do anything.
+    ListItem *trash = list->lastAccessedItem;
+    list->lastAccessedItem = NULL;
+    list->lastAccessedIndex = -1; // last accessed item is deleted and no longer in the list; so reset these two values related to it
 
-    // remember upodating .lastAccessedIndex if needed
+    if (trash == list->first)
+    { // or
+        if (list->length == 1)
+        {
+            // if the list has only one element:
+            resetList(list);
+            ListItem_dump(trash);
+            return 1;
+        }
+        
+        list->first = list->first->next;
+        list->first->prev = NULL;
+    }
+    else if (trash == list->last)
+    {
+        list->last = list->last->prev;
+        list->last->next = NULL;
+    }
+    else
+    {
+        // if the item is in the middle
+        trash->prev->next = trash->next;
+        trash->next->prev = trash->prev;
+    }
+    ListItem_dump(trash);
+    list->length--;
+    return 1; // item found and deleted successfully
 }

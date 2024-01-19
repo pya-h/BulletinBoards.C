@@ -11,6 +11,7 @@
 // write a macro to create all filenames used through the app
 // Data related MACROS:
 #define FOLDER_DATA "Data"
+#define APP_CONFIG_FILE FOLDER_DATA"/app"
 #define SET_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%ld", variations, identifier)
 #define SET_USER_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%s", variations, identifier)
 #define ENCODE_SALT "abXN_H-d!~"
@@ -55,11 +56,18 @@ typedef struct List
     long lastAccessedIndex; ListItem *lastAccessedItem; 
 } List;
 
+void *resetList(List *list);
 List *newList();
 ListItem *newListItem(void *data);
+void ListItem_dump(ListItem*);
 ListItem *List_add(List *list, void *data);
 void *List_at(List *list, long index);
 short *List_delete(List *list, long index);
 // void **List_toArray(List *list, long index);
-
+#define CONFIG_LOGGED_IN_USER 0
+typedef struct AppConfig {
+    long currentUser;
+    // etc...
+} AppConfig;    
+// void updateAppConfig(AppConfig &config);
 #endif // BASE_H
