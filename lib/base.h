@@ -6,18 +6,24 @@
 #include <direct.h>
 
 #define MAX_FILENAME_LENGTH 256
-#define MAX_TITLE_LENGTH 64
+#define MAX_TITLE_LENGTH 128
 
+// string identifiers
+// the two constant/macro(s) below, is used for defining c strings easier, specially when defining dynamic length ones
+#define string char*
+#define String(length) (char*) calloc(length, sizeof(char))
 // write a macro to create all filenames used through the app
 // Data related MACROS:
 #define FOLDER_DATA "Data"
 #define APP_CONFIG_FILE FOLDER_DATA"/app"
-#define SET_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%ld", variations, identifier)
-#define SET_USER_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%s", variations, identifier)
+#define SET_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%ld.csv", variations, identifier)
+#define SET_USER_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA"/%s/%s.csv", variations, identifier)
 #define ENCODE_SALT "abXN_H-d!~"
 #define MAX_ENCODED_STRING_LENGTH(MAX_INPUT_LENGTH) MAX_INPUT_LENGTH + 2 * strlen(ENCODE_SALT) + 1
 #define ENCODED_STRING_LENGTH(str) strlen(str) + 2 * strlen(ENCODE_SALT) + 1
+#define MAX_RESPONSE_LENGTH 64
 
+#define COLUMN_DELIMITER ","
 // UI MACROS:
 // some macros are just defined, so if they fail in some compiler,
 // we can simply be changed to something else
@@ -30,11 +36,16 @@
 #define ABS(x) x >= 0 ? x : x * -1
 #define DIFF(x, y) ABS(x - y)
 
-char *encodeString(char *input);
+void Free(short count, ...);
+string encodeString(string input);
 
-void getLine(char *dest, char *inputMessage);
-int prepareFolder(char folder[], short insideData);
-void removeNextlineCharacter(char *str);
+void getLine(string dest, string inputMessage);
+short prepareFolder(char folder[], short insideData);
+short fileExists(string filename); 
+// read file junk cleaner
+void removeNextlineCharacter(string str);
+string trimColumnValue(string col);
+
 // struct that is the base of our link list
 // using void * data-type, we can use this link list for every type in our app.
 typedef struct ListItem
@@ -62,8 +73,9 @@ ListItem *newListItem(void *data);
 void ListItem_dump(ListItem*);
 ListItem *List_add(List *list, void *data);
 void *List_at(List *list, long index);
-short *List_delete(List *list, long index);
+short List_delete(List *list, long index);
 // void **List_toArray(List *list, long index);
+
 #define CONFIG_LOGGED_IN_USER 0
 typedef struct AppConfig {
     long currentUser;

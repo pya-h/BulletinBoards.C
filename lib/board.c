@@ -6,16 +6,21 @@
 
 void resetBoard(Board *board)
 {
-    board->location[0] = '\0';      // a no location, becqause the board is not saved.
+    board->location[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
     board->id = board->ownerId = 0; // identifier of failure
 }
 
 Board *newBoard()
 {
     Board *board = (Board *)calloc(1, sizeof(Board));
-    board->location[0] = '\0';
-    board->id = board->ownerId = 0;
+    resetBoard(board);
     return board;
+}
+
+void throwBoardError(Board *board, string msg)
+{
+    resetBoard(board);
+    sprintf(board->error, "Unexpected Behaviour:\t%s\n", msg);
 }
 
 Board *createBoard(long ownerId, char title[])
@@ -29,31 +34,30 @@ Board *createBoard(long ownerId, char title[])
     {
         board->id = (long)now;
         // the boards created by a user will be tored in a file in Boards folder, named by the id of the board owner
-        /* LIKE: file:213424234324234
-            board1 id
-            board1 title
-            board2 id
-            board2 title
-            ...
-        */
+
         SET_DATA_FILE(board->location, FOLDER_BOARDS, ownerId);
+        if (!fileExists(board->location))
+        {
+            // creste the file and add the header row
+            FILE *boardFile = fopen(board->location, "w");
+            fprintf(boardFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
+            fclose(boardFile);
+        }
+        // now add new items
         FILE *boardFile = fopen(board->location, "a");
         if (boardFile)
         {
-            fprintf(boardFile, "%ld\n%s\n", board->id, board->title); // append new board to file
+            fprintf(boardFile, "%ld%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
         }
         else
         {
-            fprintf(stderr, "Cannot save board data!");
-            resetBoard(board); // return an empty board again, as an identification of error!
+            throwBoardError(board, "Cannot save board data!");
         }
         fclose(boardFile);
     }
     else
     {
-        resetBoard(board);         // identifier of failure
-        board->location[0] = '\0'; // a no location, becqause the board is not saved correctly.
-        fprintf(stderr, "Cannot assign id to this new board!");
+        throwBoardError(board, "Cannot assign id to this new board!");
     }
     return board;
 }
@@ -65,20 +69,39 @@ List *getBoards(long ownerId)
     char boardFilename[MAX_FILENAME_LENGTH] = {'\0'};
     SET_DATA_FILE(boardFilename, FOLDER_BOARDS, ownerId); // now boardFile contains the address of the board file that contains desired user board list ata.
     FILE *boardFile = fopen(boardFilename, "r");
-    if (boardFile)
+    if (!boardFile)
     {
-
-        for (Board *nextBoard = newBoard(); !feof(boardFile); nextBoard = newBoard())
+        fclose(boardFile);
+        return NULL; // when this function returns NULL, it means there was an error opening the boards database.
+    }
+    Board *nextBoard = newBoard(); // this is used to read each board data
+    string row = String(MAX_BOARD_FILE_ROW_LENGTH);
+    if (!feof(boardFile) && fgets(row, MAX_BOARD_FILE_ROW_LENGTH, boardFile) != NULL)
+    { // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
+        for (; !feof(boardFile) && fgets(row, MAX_BOARD_FILE_ROW_LENGTH, boardFile) != NULL; nextBoard = newBoard())
         {
+
+            removeNextlineCharacter(row);
+            // the second call to fgets will read the credential line
+            const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
+            string title = (string)strtok(NULL, COLUMN_DELIMITER);   // get the next column
+            title = trimColumnValue(title);
+            if (!id || !title)
+            {
+                if (!feof(boardFile)) // if file is not ended and this condition happended, then the data of this board is corrupted
+                    throwBoardError(nextBoard, "It seems the data related to this board is corrupted!");
+                continue;
+            }
+
             // each board occupies to lines
             // first line is its id and the second is the title
-            fscanf(boardFile, "%ld\n", &nextBoard->id);
+            strcpy(nextBoard->title, title);
+            nextBoard->id = atol(id); // convert read id to long
             if (!nextBoard->id)
-                break;
-            // the title of the board may contain spaces; using fscanf will ignore what comes after the space!
-            fgets(nextBoard->title, MAX_TITLE_LENGTH, boardFile);
-            // fgets returns current line of the file, containing ['\n'] next line character;
-            removeNextlineCharacter(nextBoard->title);
+            {
+                throwBoardError(nextBoard, "Could not read the id property of this board successfully!");
+                continue; // set the error message of this one and continue reading the next one (cause the file is not ended yet.)
+            }
 
             // nextBoard on each step of the loop, will be used to read board data;
             // then the memory it points to will be added as the boards list item,
@@ -86,10 +109,8 @@ List *getBoards(long ownerId)
             List_add(boards, nextBoard);
         }
     }
-    else
-    {
-        fprintf(stderr, "Cannot open boards file!");
-    }
+    free(nextBoard); // at last step of for, a new empty board is allocated that is not needed
+
     fclose(boardFile);
     return boards;
 }

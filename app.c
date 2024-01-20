@@ -18,7 +18,6 @@ short authenticationMenu();
 short boardsMenu();
 short createNewBoardSection(long);
 short selectBoardMenu(List *);
-
 // THINK: write a professional getch() ?
 // TODO: this one will count the number of options and gets key until the max length/count
 int main()
@@ -26,12 +25,11 @@ int main()
     User *u = newUser(); // U as for 'you'/username
     short choice;
     prepareDataFolders();
-    printf("%d", !0);
-    PRESS_KEY_TO_CONTINUE();
+
     while (1)
     {
         CLEAR_SCREEN();
-        if (u->loggedIn)
+        if (u != NULL && u->loggedIn)
         {
             if (!u->currentBoardId)
             {
@@ -51,7 +49,10 @@ int main()
                     break;
                 case MENU_VIEW_BOARDS:
                     boards = getBoards(u->id);
-                    choice = selectBoardMenu(boards);
+                    if (!boards) // means file couldnt be open
+                        fprintf(stderr, "Operation Failure:\n\tThe database file can not open the boards dataset file.");
+                    else
+                        choice = selectBoardMenu(boards);
                     break;
                 }
             }
@@ -64,11 +65,14 @@ int main()
         else
         {
             choice = authenticationMenu();
+            // if (u)
+            //     // if u points to location where an old user object exists
+            //     free(u);
             u = authenticationAttempt(choice); // choice is matched with MENU_LOGIN_ATTEMPT/MENU_REGISTERATION_ATTEMPT values
             // so its directly passed to the function
-            if (!u->loggedIn)
+            if (u != NULL && !u->loggedIn)
             {
-                printf("Username or password is wrong! Try again ...\n");
+                printf("%s\n", u->error);
             }
             else
             {
@@ -83,7 +87,7 @@ void prepareDataFolders()
 {
     // will make sure all folders are created & ready to hold info.
     const short numberOfFolders = 2;
-    char *folders[] = {FOLDER_USERS, FOLDER_BOARDS};
+    string folders[] = {FOLDER_USERS, FOLDER_BOARDS};
     prepareFolder(FOLDER_DATA, 0); // Create the data folder itself
     for (short i = 0; i < numberOfFolders; i++)
     {
@@ -110,7 +114,7 @@ User *authenticationAttempt(short attemptType)
     getLine(password, "\tPassword:\t");
     if (attemptType == MENU_REGISTERATION_ATTEMPT)
     {
-        char *validatonResult = validateRegisterationInput(username, password);
+        string validatonResult = validateRegisterationInput(username, password);
         if (validateRegisterationInput)
         {
             // if not null means wrong input:
@@ -147,7 +151,12 @@ short selectBoardMenu(List *boards)
     for (int i = 0; i < boards->length; i++)
     {
         Board *board = List_at(boards, i);
-        printf("\n\t%2d\t%s ", i + 1, board->title);
+        if(!board)
+            fprintf(stderr, "\n[X]\t%2d\tUnknown Error!", i + 1);
+        if(board->id && board->title) // identiying that the data was read correctly
+            printf("\n\t%2d\t%s ", i + 1, board->title);
+        else
+            fprintf(stderr, "\n[X]\t%2d\t%s", i + 1, board->error);
     }
     scanf("%hd", &choice);
     return choice;

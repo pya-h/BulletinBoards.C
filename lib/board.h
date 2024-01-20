@@ -3,7 +3,7 @@
 #include "base.h"
 
 #define FOLDER_BOARDS "Boards"
-
+#define MAX_BOARD_FILE_ROW_LENGTH MAX_TITLE_LENGTH + 20 // 20 as the length of id and some extra characters such as comma(delimiter) or double quatation
 typedef struct Board
 {
     long id; // will be set by the current time value
@@ -12,6 +12,8 @@ typedef struct Board
     long ownerId; // the id of the user tat has created this board
     // place where this board data is stored
     char location[MAX_FILENAME_LENGTH];
+
+    char error[MAX_RESPONSE_LENGTH];
 } Board;
 
 // prototypes:
@@ -21,4 +23,5 @@ List *getBoards(long ownerId);
 short saveBoards(List *boards);
 
 void resetBoard(Board *board);
+void throwBoardError(Board *board, string msg);
 #endif // BOARD_H

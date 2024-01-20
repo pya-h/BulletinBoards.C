@@ -1,7 +1,8 @@
 #include "base.h"
 #include <string.h>
+#include <stdarg.h>
 
-int prepareFolder(char folder[], short insideData)
+short prepareFolder(char folder[], short insideData)
 {
     // creates a folder if not exists
     if (insideData)
@@ -14,7 +15,15 @@ int prepareFolder(char folder[], short insideData)
     return !_mkdir(folder);
 }
 
-void getLine(char *dest, char *inputMessage)
+short fileExists(string filename) 
+{
+    FILE *reader = fopen(filename, "r");
+    short readOK = reader != NULL;
+    fclose(reader);
+    return readOK;
+}
+
+void getLine(string dest, string inputMessage)
 {
     // sometimes the app may has been executed a scanf before gets
     // the ['\n'] next line character may remain in input stream
@@ -29,24 +38,44 @@ void getLine(char *dest, char *inputMessage)
     }
 }
 
-void removeNextlineCharacter(char *str)
+void removeNextlineCharacter(string str)
 {
     // remove the next line character ['\n'] at the end of string (if exists)
     size_t len = strlen(str);
-    if (len > 0 && str[len - 1] == '\n')
+    while (len > 0 && str[len - 1] == '\n')
     {
-        str[len - 1] = '\0'; // Replace '\n' with '\0'
+        str[--len] = '\0'; // Replace '\n' with '\0'
     }
 }
 
-char *encodeString(char *input)
+string trimColumnValue(string col)
+{
+    // remove both sides of string from \n character and \" character
+    for(size_t i = 1, l = strlen(col); i < l && (!col[l - i] || col[i - 1] == '\"'  || col[l - i] == '\n'); col[l - i] = '\0', i++);
+    while(*col == '\"') col++; // remove first letter
+    return col;
+}
+
+void Free(short count, ...)
+{
+    va_list pointers;
+    va_start(pointers, count);
+    while(--count >= 0) {
+        void *trash = va_arg(pointers, void *);
+        free(trash);
+    }
+    va_end(pointers);
+    free(pointers);
+}
+
+string encodeString(string input)
 {
 
     // create a string exactly as the size needed
-    char *encoded = (char *)calloc(ENCODED_STRING_LENGTH(input), sizeof(char));
+    string encoded = String(ENCODED_STRING_LENGTH(input));
     int current = 0;
     // add salt to start of string
-    for (char *salt = ENCODE_SALT; *salt; encoded[current++] = *(salt++))
+    for (string salt = ENCODE_SALT; *salt; encoded[current++] = *(salt++))
         ;
 
     // encode password by performing not on each char
@@ -54,7 +83,7 @@ char *encodeString(char *input)
         ;
 
     // append salt to the end of string too
-    for (char *salt = ENCODE_SALT; *salt; encoded[current++] = ~*(salt++))
+    for (string salt = ENCODE_SALT; *salt; encoded[current++] = ~*(salt++))
         ;
     encoded[current] = '\0';
     return encoded;
@@ -163,7 +192,7 @@ void ListItem_dump(ListItem *trash)
     free(trash);
 }
 
-short *List_delete(List *list, long index)
+short List_delete(List *list, long index)
 {
     // TODO:
     if (!List_at(list, index)) // updates .lastAccessedItem and .lastAccessedIdex
