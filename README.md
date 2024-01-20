@@ -1,8 +1,6 @@
-# Bulletin Boards
-# Language: Lovely C :)
+# Bulletin Boards by My Lovely C :)
 
 <h3>Features until now:</h3>
-<hr />
 <ol>
     <li>User Registeration</li>
     <li>Uer Login </li>
@@ -13,6 +11,7 @@
     <li>Implemented a Cool List model;</li>
     <li>Special error handling in C</li>
 </ol>
+<hr />
 <h2>Todos:</h2>
 <hr />
 <ol>
@@ -25,7 +24,7 @@
     <li>Add logout option</li>
     <li>Allow users to auto login til 24 ours of last use</li>
 </ol>
-
+<hr />
 <h1>BUGS</h1>
 <ol>
     <li><u> After showing a error message 1 or two times, app crashes!</u></li>
