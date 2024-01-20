@@ -13,7 +13,6 @@
 </ol>
 <hr />
 <h2>Todos:</h2>
-<hr />
 <ol>
     <li><s>Use .csv excel files instead of normal txt files.</s></li>
     <li>Complete delete board section</li>
