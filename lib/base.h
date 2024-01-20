@@ -69,5 +69,5 @@ typedef struct AppConfig {
     long currentUser;
     // etc...
 } AppConfig;    
-// void updateAppConfig(AppConfig &config);
+void updateAppConfig(AppConfig *config);
 #endif // BASE_H

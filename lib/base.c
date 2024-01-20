@@ -125,7 +125,7 @@ void *List_at(List *list, long index)
 
     // just in a lucky case that a item is access again rapidly, or is near previous accessed item, use this section
     if (list->lastAccessedIndex >= 0 && list->lastAccessedItem // if there was a cash index, use it if it helps to find item fast
-        && list->lastAccessedIndex < list->length) // this condition is just for double checking that lastItemIndex value is correct
+        && list->lastAccessedIndex < list->length)             // this condition is just for double checking that lastItemIndex value is correct
     {
         if (index == list->lastAccessedIndex)
             return list->lastAccessedItem->data;
@@ -181,7 +181,7 @@ short *List_delete(List *list, long index)
             ListItem_dump(trash);
             return 1;
         }
-        
+
         list->first = list->first->next;
         list->first->prev = NULL;
     }
@@ -199,4 +199,10 @@ short *List_delete(List *list, long index)
     ListItem_dump(trash);
     list->length--;
     return 1; // item found and deleted successfully
+}
+
+// TODO: to be implemented
+void updateAppConfig(AppConfig *config)
+{
+    // this method helps the app to auto login if user has been logged in before
 }

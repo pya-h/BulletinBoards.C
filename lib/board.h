@@ -18,6 +18,7 @@ typedef struct Board
 Board *newBoard();
 Board *createBoard(long ownerId, char title[]);
 List *getBoards(long ownerId);
+short saveBoards(List *boards);
 
 void resetBoard(Board *board);
 #endif // BOARD_H

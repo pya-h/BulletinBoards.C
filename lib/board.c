@@ -73,7 +73,7 @@ List *getBoards(long ownerId)
             // each board occupies to lines
             // first line is its id and the second is the title
             fscanf(boardFile, "%ld\n", &nextBoard->id);
-            if(!nextBoard->id)
+            if (!nextBoard->id)
                 break;
             // the title of the board may contain spaces; using fscanf will ignore what comes after the space!
             fgets(nextBoard->title, MAX_TITLE_LENGTH, boardFile);
@@ -85,9 +85,18 @@ List *getBoards(long ownerId)
             // then nextBoard will occupy a new place on memory
             List_add(boards, nextBoard);
         }
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "Cannot open boards file!");
     }
     fclose(boardFile);
     return boards;
+}
+
+short saveBoards(List *boards)
+{
+    // this is used when a board is modified or deleted
+    // then the app should remove boards file data and replace its data with the updated data
+    // that is stored in boards list
 }
