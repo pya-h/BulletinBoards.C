@@ -20,8 +20,6 @@
         unsigned short loggedIn; // if the user is logged in or logined,
         // it can be checked by this flag
 
-        long currentBoardId, currentListId;
-
         char error[MAX_RESPONSE_LENGTH];
     } User;
 

@@ -6,7 +6,7 @@
 
 void Board_reset(Board *board)
 {
-    board->location[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
+    board->title[0] = board->location[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
     board->id = board->ownerId = 0; // identifier of failure
 }
 
@@ -59,12 +59,12 @@ Board *createBoard(long ownerId, char title[])
         }
         else
         {
-            Board_failure(board, "Cannot save board data!");
+            Board_failure(board, "Cannot save Board data!");
         }
     }
     else
     {
-        Board_failure(board, "Cannot assign id to this new board!");
+        Board_failure(board, "Cannot assign id to this new Board!");
     }
     _fcloseall(); //Just to make sure
     return board;
@@ -103,7 +103,7 @@ List *getBoards(long ownerId)
 
             // each board occupies to lines
             // first line is its id and the second is the title
-            strcpy(nextBoard->title, title);
+            strncpy(nextBoard->title, title, MAX_TITLE_LENGTH);
             nextBoard->id = atol(id); // convert read id to long
             nextBoard->ownerId = ownerId;
             if (!nextBoard->id)

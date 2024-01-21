@@ -9,7 +9,6 @@ void User_reset(User *user)
     user->id = 0;
     user->loggedIn = 0;
     user->name[0] = user->error[0] = '\0';
-    user->currentBoardId = user->currentListId = 0;
 }
 
 User *newUser()
@@ -41,7 +40,7 @@ User *registerUser(char username[], char password[])
             return user;
         }
         user->id = (long)now;
-        strcpy(user->name, username);
+        strncpy(user->name, username, MAX_USERNAME_LENGTH);
 
         // Save credentials into a file
         SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
@@ -79,7 +78,7 @@ User *loginUser(char username[], char password[])
 {
     User *user = newUser(); // user is loggod out by default
     // create the user
-    strcpy(user->name, username);
+    strncpy(user->name, username, MAX_USERNAME_LENGTH);
 
     SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
     // now check if there is registered user with this name
