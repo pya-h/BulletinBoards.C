@@ -30,6 +30,8 @@
     User *registerUser(char username[], char password[]); // regitserUser
     User *loginUser(char username[], char password[]);    // loginUser
     string validateRegisterationInput(char inputUser[], char inputPassword[]);
-    void resetUser(User *user);
-    void throwUserError(User*, string);
+    void User_reset(User *user);
+    void User_failure(User*, string);
+
+    string User_getError(User *user);
 #endif // USER_H

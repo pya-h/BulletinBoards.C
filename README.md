@@ -28,3 +28,8 @@
 <ol>
     <li><u> After showing a error message 1 or two times, app crashes!</u></li>
 </ol>
+<hr />
+<ul>
+    <li>Run w.bat for windows or run .\w in windows terminal </li>
+    <li>Run bash x in linux terminal. (It has some work to do though)</li>
+</ul>

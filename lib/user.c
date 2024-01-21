@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-void resetUser(User *user)
+void User_reset(User *user)
 {
     user->id = 0;
     user->loggedIn = 0;
@@ -15,13 +15,13 @@ void resetUser(User *user)
 User *newUser()
 {
     User *user = (User *)calloc(1, sizeof(User));
-    resetUser(user);
+    User_reset(user);
     return user;
 }
 
-void throwUserError(User *user, string msg) 
+void User_failure(User *user, string msg) 
 {
-    resetUser(user);
+    User_reset(user);
     sprintf(user->error, "Operation Failure:\n\t%s\n", msg);
 }
 
@@ -35,6 +35,11 @@ User *registerUser(char username[], char password[])
     if (now != -1)
     {
         // time returned successfully
+        string valiationResult = validateRegisterationInput(username, password);
+        if(!valiationResult) {
+            User_failure(user, valiationResult);
+            return user;
+        }
         user->id = (long)now;
         strcpy(user->name, username);
 
@@ -42,7 +47,7 @@ User *registerUser(char username[], char password[])
         SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
         if(fileExists(user->location))
         {
-            throwUserError(user, "The username is taken before!");
+            User_failure(user, "The username is taken before!");
             return user;
         }
         FILE *userFile = fopen(user->location, "w");
@@ -56,7 +61,7 @@ User *registerUser(char username[], char password[])
         else
         {
             // TODO: maybe folder doesnt exist!
-            throwUserError(user, "Cannot save user credentials!"); // for making sure user is not logged in without data stored in Data
+            User_failure(user, "Cannot save user credentials!"); // for making sure user is not logged in without data stored in Data
         }
         // close the file
         fclose(userFile);
@@ -64,9 +69,9 @@ User *registerUser(char username[], char password[])
     else
     {
         // ERROR:
-        throwUserError(user, "Cannot assign an id to you!");
+        User_failure(user, "Cannot assign an id to you!");
     }
-
+    _fcloseall(); // just to make sure no file is remaining open
     return user;
 }
 
@@ -101,15 +106,15 @@ User *loginUser(char username[], char password[])
                 fclose(userFile);
                 return user;
             }
-
         }
+        fclose(userFile);
     }
 
-    throwUserError(user, "Username or password is wrong! Please try again ..."); // identifier of error is an empty user
+    User_failure(user, "Username or password is wrong! Please try again ..."); // identifier of error is an empty user
     
     // else user will remain logged out ...
     // close the file
-    fclose(userFile);
+    _fcloseall();
     return user;
 }
 
@@ -117,4 +122,19 @@ string validateRegisterationInput(char inputUser[], char inputPassword[])
 {
     // TODO: checks the input, returns the error string or NULL(if ok!)
     return NULL;
+}
+
+string User_getError(User *user)
+{
+
+    if(user && user->error[0])
+        // if error string is not empty, return it directly
+        return user->error;
+    if(!user)
+        return "An UnknownError detected. Trying to restart the app may help resolve or identify the issue ...";
+    
+    if(!user->id || !user->location)
+        return "An UnknownError detected and it appears to be related to database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
+    return NULL;
+
 }
