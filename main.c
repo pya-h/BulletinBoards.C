@@ -1,12 +1,11 @@
 #include "app/bulletin-boards.h"
+
 // THINK: write a professional getch() ?
 // TODO: this one will count the number of options and gets key until the max length/count
 int main()
 {
     MenuOption choice;
     long selectedItemIndex = -1; // choice is of type short and is not suitable with menus with too many items.
-    List *boards;
-    string error; // used for error handling
     Session session = newSession();
     initializeData();
 
@@ -21,11 +20,11 @@ int main()
                 {
                 case MENU_OPTION_CREATE:
                 {
-                    Board *newBoard = createNewBoardSection(session.user->id);
+                    Board *newBoard = createBoardInterface(session.user->id);
                     session.error = Board_getError(newBoard);
                     if (!session.error) // if board created successfully
                     {
-                        List_add(boards, newBoard);
+                        List_add(session.boards, newBoard);
                         printf("Board successfully created.\n");
                     }
                     else
@@ -36,21 +35,21 @@ int main()
                 break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
-                    session.error = List_getError(boards);
+                    session.error = List_getError(session.boards);
                     if (session.error)
                     {
                         // means file cant be open
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectBoardMenu(boards) - 1; // menu items are started at 1
+                    selectedItemIndex = selectBoardInterface(session.boards) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
-                    Board *selectedBoard = (Board *)List_at(boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
+                    Board *selectedBoard = (Board *)List_at(session.boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
                     if (!selectedBoard)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, boards->length);
+                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, session.boards->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
@@ -70,11 +69,11 @@ int main()
                 {
                 case MENU_OPTION_CREATE:
                 {
-                    TaskList *newTaskList = createNewTaskListSection(session.user->id);
+                    TaskList *newTaskList = createTaskListInterface(session.board);
                     session.error = TaskList_getError(newTaskList);
                     if (!session.error) // if board created successfully
                     {
-                        List_add(boards, newBoard);
+                        //List_add(session.lists, newBoard);
                         // printf("List successfully created and placed on the %s board.\n", session.board->);
                     }
                     else
@@ -92,7 +91,7 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectBoardMenu(boards) - 1; // menu items are started at 1
+                    selectedItemIndex = selectBoardInterface(boards) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     Board *selectedBoard = (Board *)List_at(boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -116,7 +115,7 @@ int main()
         }
         else
         {
-            choice = authenticationMenu();
+            choice = authenticationInterface();
             // if (u)
             //     // if u points to location where an old user object exists
             //     free(u);
@@ -127,8 +126,8 @@ int main()
                 printf("Hi %s, Welcome! \n", session.user->name);
                 // now load user boards
                 // load all boards and list their titles
-                boards = getBoards(session.user->id);
-                session.error = List_getError(boards);
+                session.boards = getBoards(session.user->id);
+                session.error = List_getError(session.boards);
                 if (session.error)
                 {
                     fprintf(stderr, "Fatal Error: %s", session.error);

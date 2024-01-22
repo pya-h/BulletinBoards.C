@@ -1,7 +1,8 @@
 
 #include "bulletin-boards.h"
 
-Session newSession() {
+Session newSession()
+{
     Session s;
     s.user = newUser();
     s.board = NULL;
@@ -12,8 +13,8 @@ Session newSession() {
 void initializeData()
 {
     // will make sure all folders are created & ready to hold info.
-    const short numberOfFolders = 2;
-    string folders[] = {FOLDER_USERS, FOLDER_BOARDS};
+    const short numberOfFolders = 3;
+    string folders[] = {FOLDER_USERS, FOLDER_BOARDS, FOLDER_LISTS};
     prepareFolder(FOLDER_DATA, 0); // Create the data folder itself
     for (short i = 0; i < numberOfFolders; i++)
     {
@@ -21,7 +22,7 @@ void initializeData()
     }
 }
 // ** Section: Users **
-MenuOption authenticationMenu()
+MenuOption authenticationInterface()
 {
     MenuOption option;
     CLEAR_SCREEN();
@@ -55,19 +56,20 @@ MenuOption boardsMenu()
            MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY);
     while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
            option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW)
-        return option;
+        ;
+    return option;
 }
 
-Board *createNewBoardSection(long ownerId)
+Board *createBoardInterface(long ownerId)
 {
     char title[MAX_ANY_STRING_LENGTH];
-    printf("\n\nNew Board:");
+    printf("\n\nBoard Creation:");
 
     getLine(title, "\tTitle:\t");
     return createBoard(ownerId, title);
 }
 
-long selectBoardMenu(List *boards)
+long selectBoardInterface(List *boards)
 {
     long choice;
     string error;
@@ -85,4 +87,26 @@ long selectBoardMenu(List *boards)
     }
     scanf("%ld", &choice);
     return choice;
+}
+
+TaskList *createTaskListInterface(Board *containerBoard)
+{
+    char title[MAX_ANY_STRING_LENGTH];
+    printf("\n\nList Creation");
+
+    getLine(title, "\tTitle:\t");
+    return createTaskList(containerBoard, title);
+}
+// ** Section: Boards **
+MenuOption listsMenu()
+{
+    MenuOption option;
+    printf("\nHow can I help you?\n");
+    PRINT_DASH_ROW();
+    printf("\t%d\tView/Open Lists\n\t%d\tCreate New List\n\t%d\tDelete/Edit List ",
+           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY);
+    while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
+           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW)
+        ;
+    return option;
 }

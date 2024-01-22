@@ -11,19 +11,17 @@
         long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
         char title[MAX_TITLE_LENGTH];
-        Board *board;
-        // place where this board data is stored
-        char location[MAX_FILENAME_LENGTH];
+        Board *board; // the board that contains the list
 
         char error[MAX_RESPONSE_LENGTH];
     } TaskList;
 
     // prototypes:
     TaskList *newTaskList();
-    TaskList *createTaskList(Board *board, char title[]);
-    List *getTaskLists(Board *board);
+    TaskList *createTaskList(Board *containerBoard, char title[]);
+    List *getTaskLists(Board *containerBoard);
     short TaskLists_save(List *TaskLists);
     string TaskList_getError(TaskList *);
     void TaskList_reset(TaskList *TaskList);
-    void TaskList_failure(TaskList *board, string msg);
+    void TaskList_failure(TaskList *taskList, string msg);
 #endif // TASK_LIST_H

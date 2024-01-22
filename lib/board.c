@@ -6,7 +6,7 @@
 
 void Board_reset(Board *board)
 {
-    board->title[0] = board->location[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
+    board->title[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
     board->id = board->ownerId = 0; // identifier of failure
 }
 
@@ -39,19 +39,19 @@ Board *createBoard(long ownerId, char title[])
     strncpy(board->title, title, MAX_TITLE_LENGTH - 1);
     if (now != -1)
     {
+        char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
         board->id = (long)now;
         // the boards created by a user will be tored in a file in Boards folder, named by the id of the board owner
-
-        SET_DATA_FILE(board->location, FOLDER_BOARDS, ownerId);
-        if (!fileExists(board->location))
+        SET_DATA_FILE(fileLocation, FOLDER_BOARDS, ownerId);
+        if (!fileExists(fileLocation))
         {
             // creste the file and add the header row
-            FILE *boardFile = fopen(board->location, "w");
+            FILE *boardFile = fopen(fileLocation, "w");
             fprintf(boardFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
             fclose(boardFile);
         }
         // now add new items
-        FILE *boardFile = fopen(board->location, "a");
+        FILE *boardFile = fopen(fileLocation, "a");
         if (boardFile)
         {
             fprintf(boardFile, "%ld%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
@@ -140,8 +140,8 @@ string Board_getError(Board *board)
     if(!board)
         return "An UnknownError detected. Trying to restart the app may help resolve or identify the issue ...";
     
-    if(!board->id || !board->location)
-        return "An UnknownError detected and it appears to be related to database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
+    if(!board->id)
+        return "An UnknownError detected and it appears to be related to boards database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
 
 }

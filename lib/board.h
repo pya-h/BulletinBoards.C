@@ -10,9 +10,6 @@
         // id will be used for ownership of other items (such as tasks)
         char title[MAX_TITLE_LENGTH];
         long ownerId; // the id of the user tat has created this board
-        // place where this board data is stored
-        char location[MAX_FILENAME_LENGTH];
-
         char error[MAX_RESPONSE_LENGTH];
     } Board;
 

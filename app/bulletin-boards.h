@@ -5,7 +5,7 @@
     #include "../lib/base.h"
     #include "../lib/user.h"
     #include "../lib/board.h"
-    #include "../lib/task-list.h"
+    #include "../lib/link-list.h"
     #include "../lib/task-list.h"
 
     // authentication options
@@ -25,13 +25,16 @@
         Board *board;
         TaskList *list;
         string error;
+        List *boards, *lists;
     } Session;
     
     Session newSession();
     void initializeData();
     User *authenticationAttempt(short);
-    MenuOption authenticationMenu();
+    MenuOption authenticationInterface();
     MenuOption boardsMenu();
-    Board *createNewBoardSection(long);
-    long selectBoardMenu(List *);
+    Board *createBoardInterface(long);
+    long selectBoardInterface(List *);
+    MenuOption listsMenu();
+    TaskList *createTaskListInterface(Board *containerBoard);
 #endif //BULLETIN_BOARDS
