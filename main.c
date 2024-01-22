@@ -13,7 +13,7 @@ int main()
     {
         if (session.user != NULL && session.user->loggedIn)
         {
-            if (!session.board)
+            if (!session.currentBoard)
             {
                 choice = boardsMenu();
                 switch (choice)
@@ -53,28 +53,32 @@ int main()
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
+                    session.currentBoard = selectedBoard;
+                    session.lists = getTaskLists(session.currentBoard);
+                    session.error = List_getError(session.lists);
+                    if (session.error)
+                    {
+                        fprintf(stderr, "Fatal Error: %s", session.error);
+                        break; // close the app.
+                    }
                     CLEAR_SCREEN();
-                    printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
-                    session.board = selectedBoard;
-                    PRINT_DASH_ROW();
-                    printf("%10ld\t\t%10ld\t\t%s\n", selectedBoard->id, selectedBoard->ownerId, selectedBoard->title);
-                    continue; // continue the loop, so the console doesnt get clean at the end of the loop
-                    // because we want the user to see board data while he sees List menu
-                } // this switch doesnt need any default case; because user is forced to select only one of the 3 options provided
+                    continue; // continue the loop, so the board will be printed imedately in next if
+                }             // this switch doesnt need any default case; because user is forced to select only one of the 3 options provided
             }
-            else if(!session.list)
+            else if (!session.currentList)
             {
+                Board_print(session.currentBoard);
                 choice = listsMenu();
                 switch (choice)
                 {
                 case MENU_OPTION_CREATE:
                 {
-                    TaskList *newTaskList = createTaskListInterface(session.board);
+                    TaskList *newTaskList = createTaskListInterface(session.currentBoard);
                     session.error = TaskList_getError(newTaskList);
                     if (!session.error) // if board created successfully
                     {
-                        //List_add(session.lists, newBoard);
-                        // printf("List successfully created and placed on the %s board.\n", session.board->);
+                        // List_add(session.lists, newBoard);
+                        //  printf("List successfully created and placed on the %s board.\n", session.board->);
                     }
                     else
                     {
@@ -82,35 +86,51 @@ int main()
                     }
                 }
                 break;
-                /*case MENU_OPTION_VIEW:
+                case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
-                    session.error = List_getError(boards);
+                    session.error = List_getError(session.lists);
                     if (session.error)
                     {
                         // means file cant be open
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectBoardInterface(boards) - 1; // menu items are started at 1
+                    selectedItemIndex = selectBoardInterface(session.lists) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
-                    Board *selectedBoard = (Board *)List_at(boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
+                    TaskList *selectedTaskList = (TaskList *)List_at(session.lists, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
-                    if (!selectedBoard)
+                    if (!selectedTaskList)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, boards->length);
+                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, session.lists->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
+                    session.currentList = selectedTaskList;
+                    // TODO: Load TASKS here
+                    // then check error
+                    /*
+                    session.tasks = getTasks(session.currentList->id);
+                    session.error = List_getError(session.lists);
+                    if (session.error)
+                    {
+                        fprintf(stderr, "Fatal Error: %s", session.error);
+                        break; // close the app.
+                    }*/
                     CLEAR_SCREEN();
-                    printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
-                    session.board = selectedBoard;
-                    PRINT_DASH_ROW();
-                    printf("%10ld\t\t%10ld\t\t%s\n", selectedBoard->id, selectedBoard->ownerId, selectedBoard->title);
-                    continue; // continue the loop, so the console doesnt get clean at the end of the loop
+                    continue; // continue the loop, so the board will be printed imedately in next if
                     // because we want the user to see board data while he sees List menu
-                */
+                case MENU_OPTION_GOBACK:
+                    free(session.lists);
+                    session.currentBoard = NULL;
+                    session.currentList = NULL;
+                    CLEAR_SCREEN();
+                    continue; // immediately go back to boards menu
                 }
+            }
+            else
+            {
+                
             }
         }
         else

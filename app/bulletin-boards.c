@@ -5,8 +5,8 @@ Session newSession()
 {
     Session s;
     s.user = newUser();
-    s.board = NULL;
-    s.list = NULL;
+    s.currentBoard = NULL;
+    s.currentList = NULL;
     return s;
 }
 
@@ -103,10 +103,31 @@ MenuOption listsMenu()
     MenuOption option;
     printf("\nHow can I help you?\n");
     PRINT_DASH_ROW();
-    printf("\t%d\tView/Open Lists\n\t%d\tCreate New List\n\t%d\tDelete/Edit List ",
-           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY);
+    printf("\t%d\tView/Open Lists\n\t%d\tCreate New List\n\t%d\tDelete/Edit List\n\t%d\tGo Back",
+           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY, MENU_OPTION_GOBACK);
     while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
-           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW)
+           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW && option != MENU_OPTION_GOBACK)
         ;
     return option;
+}
+
+// TODO: THIS FUNCTION and selectBoardInterface may be merged
+long selectTaskListInterface(List *taskLists)
+{
+    long choice;
+    string error;
+    CLEAR_SCREEN();
+    printf("\nWhich list you want to see? [Select & Hit Enter]\n");
+    PRINT_DASH_ROW();
+    for (int i = 0; i < taskLists->length; i++)
+    {
+        TaskList *taskList = List_at(taskLists, i);
+        error = TaskList_getError(taskList);
+        if (error)
+            fprintf(stderr, "\nX\t%2d\t%s", i + 1, error);
+        else
+            printf("\n\t%2d\t%s ", i + 1, taskList->title);
+    }
+    scanf("%ld", &choice);
+    return choice;
 }

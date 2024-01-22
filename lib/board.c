@@ -97,7 +97,7 @@ List *getBoards(long ownerId)
             if (!id || !title)
             {
                 if (!feof(boardFile)) // if file is not ended and this condition happended, then the data of this board is corrupted
-                    Board_failure(nextBoard, "It seems the data related to this board is corrupted!");
+                    Board_failure(nextBoard, "It seems the data related to this board is corrupted or modified!");
                 continue;
             }
 
@@ -144,4 +144,11 @@ string Board_getError(Board *board)
         return "An UnknownError detected and it appears to be related to boards database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
 
+}
+
+void Board_print(Board *board)
+{
+    printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
+    PRINT_DASH_ROW();
+    printf("%10ld\t\t%10ld\t\t%s\n", board->id, board->ownerId, board->title);
 }

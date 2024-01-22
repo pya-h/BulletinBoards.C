@@ -21,4 +21,5 @@
     string Board_getError(Board *);
     void Board_reset(Board *board);
     void Board_failure(Board *board, string msg);
+    void Board_print(Board *);
 #endif // BOARD_H

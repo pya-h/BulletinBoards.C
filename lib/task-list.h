@@ -4,7 +4,7 @@
     #include "link-list.h"
     #include "board.h"
     #define FOLDER_LISTS "Lists"
-    #define MAX_LIST_FILE_ROW_LENGTH MAX_TITLE_LENGTH + 20 // 20 as the length of id and some extra characters such as comma(delimiter) or double quatation
+    #define MAX_LIST_FILE_ROW_LENGTH MAX_TITLE_LENGTH + 30 // 30 as the length of id, ownerId and some extra characters such as comma(delimiter) or double quatation
 
     typedef struct TaskList
     {
@@ -24,4 +24,5 @@
     string TaskList_getError(TaskList *);
     void TaskList_reset(TaskList *TaskList);
     void TaskList_failure(TaskList *taskList, string msg);
+    void Board_print(Board *board);
 #endif // TASK_LIST_H

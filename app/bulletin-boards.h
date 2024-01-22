@@ -16,25 +16,33 @@
     #define MENU_OPTION_VIEW 1
     #define MENU_OPTION_CREATE 2
     #define MENU_OPTION_MODIFY 3
+    #define MENU_OPTION_GOBACK 4
 
 
     typedef char MenuOption;
 
     typedef struct Session {
         User *user;
-        Board *board;
-        TaskList *list;
+        Board *currentBoard;
+        TaskList *currentList;
         string error;
         List *boards, *lists;
     } Session;
     
     Session newSession();
     void initializeData();
+    // authentication menus
     User *authenticationAttempt(short);
     MenuOption authenticationInterface();
+
+    // boards menu and interfaces
     MenuOption boardsMenu();
     Board *createBoardInterface(long);
     long selectBoardInterface(List *);
+
+    // task lists menu and interfaces
     MenuOption listsMenu();
-    TaskList *createTaskListInterface(Board *containerBoard);
+    TaskList *createTaskListInterface(Board *);
+    long selectTaskListInterface(List *);
+
 #endif //BULLETIN_BOARDS

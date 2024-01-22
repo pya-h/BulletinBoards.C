@@ -44,7 +44,7 @@ TaskList *createTaskList(Board *containerBoard, char title[])
         {
             // creste the file and add the header row
             FILE *taskListFile = fopen(fileLocation, "w");
-            fprintf(taskListFile, "Id%sList Title%sBoard Id%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER);
+            fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER);
             fclose(taskListFile);
         }
     printf("stage 2 done!\n");
@@ -54,8 +54,8 @@ TaskList *createTaskList(Board *containerBoard, char title[])
         if (taskListFile)
         {
             printf("stage 3 done!\n");
-            fprintf(taskListFile, "%ld%s\"%s\"%s%ld%s%ld\n", taskList->id, COLUMN_DELIMITER, taskList->title,
-                    COLUMN_DELIMITER, taskList->board->id, COLUMN_DELIMITER, taskList->board->ownerId); // append new board to file
+            fprintf(taskListFile, "%ld%s\"%s\"%s%ld\n", taskList->id, COLUMN_DELIMITER, taskList->title,
+                    COLUMN_DELIMITER, taskList->board->ownerId); // append new board to file
             fclose(taskListFile);
             printf("stage 4 done!\n");
         }
@@ -78,6 +78,57 @@ TaskList *createTaskList(Board *containerBoard, char title[])
 
 List *getTaskLists(Board *containerBoard)
 {
+        // read all the boards from the file
+    List *taskLists = newList();
+    char taskListsFilename[MAX_FILENAME_LENGTH] = {'\0'};
+    SET_DATA_FILE(taskListsFilename, FOLDER_LISTS, containerBoard->id); // now taskListsFile contains the address of the board file that contains desired user board list ata.
+    FILE *taskListsFile = fopen(taskListsFilename, "r");
+    if (!taskListsFile)
+    {
+        _fcloseall();
+        return taskLists; // user has not create any board; but a empty list will be sent back to caller, so that the user can add items in the future
+    }
+    TaskList *nextTaskList = newTaskList(); // this is used to read each board data
+    string row = String(MAX_LIST_FILE_ROW_LENGTH);
+    if (!feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile) != NULL)
+    { // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
+        for (; !feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile) != NULL; nextTaskList = newTaskList())
+        {
+            removeNextlineCharacter(row);
+            // the second call to fgets will read the credential line
+            const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
+            string title = (string)strtok(NULL, COLUMN_DELIMITER);   // get the next column
+            const string ownerId = (string)strtok(NULL, COLUMN_DELIMITER); // the ownerId is also in containerBoatd->id
+            // this one is used just to check values are correct
+            title = trimColumnValue(title);
+            if (!id || !title || !ownerId || atol(ownerId) != containerBoard->ownerId)
+            {
+                if (!feof(taskListsFile)) // if file is not ended and this condition happended, then the data of this board is corrupted
+                    TaskList_failure(nextTaskList, "It seems the data related to this list is corrupted or modified!");
+                continue;
+            }
+
+            // each task list occupies to lines
+            // first line is its id and the second is the title
+            strncpy(nextTaskList->title, title, MAX_TITLE_LENGTH);
+            nextTaskList->id = atol(id); // convert read id to long
+            nextTaskList->board = containerBoard;
+            if (!nextTaskList->id)
+            {
+                TaskList_failure(nextTaskList, "Could not read the id property of this board successfully!");
+                continue; // set the error message of this one and continue reading the next one (cause the file is not ended yet.)
+            }
+
+            // nextTaskList on each step of the loop, will be used to read list data;
+            // then the memory it points to will be added as the taskLists list item,
+            // then nextTaskList will occupy a new place on memory
+            List_add(taskLists, nextTaskList);
+        }
+    }
+    free(nextTaskList); // at last step of for, a new empty board is allocated that is not needed
+
+    fclose(taskListsFile);
+    return taskLists;
 }
 
 short TaskLists_save(List *taskLists)
@@ -101,4 +152,11 @@ void TaskList_failure(TaskList *taskList, string msg)
 {
     TaskList_reset(taskList);
     sprintf(taskList->error, "Unexpected Behaviour:\t%s\n", msg);
+}
+
+void TaskList_print(TaskList *taskList)
+{
+    printf("Your selected taskList is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ");
+    PRINT_DASH_ROW();
+    printf("%10ld\t\t%10ld\t\t%10ld\t\t%s\n", taskList->id, taskList->board->ownerId, taskList->board->id, taskList->title);
 }
