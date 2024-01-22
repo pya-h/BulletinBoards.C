@@ -24,5 +24,5 @@
     string TaskList_getError(TaskList *);
     void TaskList_reset(TaskList *TaskList);
     void TaskList_failure(TaskList *taskList, string msg);
-    void Board_print(Board *board);
+    void TaskList_print(TaskList *taskList);
 #endif // TASK_LIST_H

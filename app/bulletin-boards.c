@@ -69,26 +69,6 @@ Board *createBoardInterface(long ownerId)
     return createBoard(ownerId, title);
 }
 
-long selectBoardInterface(List *boards)
-{
-    long choice;
-    string error;
-    CLEAR_SCREEN();
-    printf("\nWhich board you want to see? [Select & Hit Enter]\n");
-    PRINT_DASH_ROW();
-    for (int i = 0; i < boards->length; i++)
-    {
-        Board *board = List_at(boards, i);
-        error = Board_getError(board);
-        if (error)
-            fprintf(stderr, "\nX\t%2d\t%s", i + 1, error);
-        else
-            printf("\n\t%2d\t%s ", i + 1, board->title);
-    }
-    scanf("%ld", &choice);
-    return choice;
-}
-
 TaskList *createTaskListInterface(Board *containerBoard)
 {
     char title[MAX_ANY_STRING_LENGTH];
@@ -112,21 +92,33 @@ MenuOption listsMenu()
 }
 
 // TODO: THIS FUNCTION and selectBoardInterface may be merged
-long selectTaskListInterface(List *taskLists)
+long selectCollectionInterface(List *collection, MenuOption collectionType)
 {
     long choice;
+    string title;
     string error;
     CLEAR_SCREEN();
-    printf("\nWhich list you want to see? [Select & Hit Enter]\n");
+    printf("\nWhich %s you want to see? [Select & Hit Enter]\n", collectionType == COLLECTION_TYPE_BOARD ? "Board" : "List");
     PRINT_DASH_ROW();
-    for (int i = 0; i < taskLists->length; i++)
+    for (long i = 0; i < collection->length; i++)
     {
-        TaskList *taskList = List_at(taskLists, i);
-        error = TaskList_getError(taskList);
+        if (collectionType == COLLECTION_TYPE_BOARD)
+        {
+            Board *board = (Board*)List_at(collection, i);
+            error = Board_getError(board);
+            title = board->title;
+        }
+        else
+        {
+            TaskList *taskList = (TaskList*)List_at(collection, i);
+            error = TaskList_getError(taskList);
+            title = taskList->title;
+        }
+
         if (error)
             fprintf(stderr, "\nX\t%2d\t%s", i + 1, error);
         else
-            printf("\n\t%2d\t%s ", i + 1, taskList->title);
+            printf("\n\t%2d\t%s ", i + 1, title);
     }
     scanf("%ld", &choice);
     return choice;

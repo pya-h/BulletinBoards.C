@@ -35,13 +35,12 @@ User *registerUser(char username[], char password[])
     {
         // time returned successfully
         string valiationResult = validateRegisterationInput(username, password);
-        if(!valiationResult) {
+        if(valiationResult) {
             User_failure(user, valiationResult);
             return user;
         }
         user->id = (long)now;
         strncpy(user->name, username, MAX_USERNAME_LENGTH);
-
         // Save credentials into a file
         SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
         if(fileExists(user->location))
@@ -52,7 +51,6 @@ User *registerUser(char username[], char password[])
         FILE *userFile = fopen(user->location, "w");
         if (userFile)
         {
-
             fprintf(userFile, "User Id%sUser Encoded Credentials\n%ld%s\"%s\"\n", COLUMN_DELIMITER, user->id, COLUMN_DELIMITER, encodeString(password)); // save password and id as encoded
             // password will not be stored in user and will only be used for login purposes;
             user->loggedIn = 1;

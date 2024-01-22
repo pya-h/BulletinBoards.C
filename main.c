@@ -42,7 +42,7 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectBoardInterface(session.boards) - 1; // menu items are started at 1
+                    selectedItemIndex = selectCollectionInterface(session.boards, COLLECTION_TYPE_BOARD) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     Board *selectedBoard = (Board *)List_at(session.boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -95,7 +95,7 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectBoardInterface(session.lists) - 1; // menu items are started at 1
+                    selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_BOARD) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     TaskList *selectedTaskList = (TaskList *)List_at(session.lists, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -130,7 +130,7 @@ int main()
             }
             else
             {
-                
+                TaskList_print(session.currentList);
             }
         }
         else

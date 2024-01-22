@@ -10,7 +10,8 @@
 
     // string identifiers
     // the two constant/macro(s) below, is used for defining c strings easier, specially when defining dynamic length ones
-    #define string char *
+    #define string char* // these string must each be defined in a separate line
+    // because it gets like: char* s1, s2  => then s2 will be a single char!
     #define String(length) (char *)calloc(length, sizeof(char))
     // write a macro to create all filenames used through the app
     // Data related MACROS:

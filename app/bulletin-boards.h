@@ -18,6 +18,9 @@
     #define MENU_OPTION_MODIFY 3
     #define MENU_OPTION_GOBACK 4
 
+    // these two are used in selectCollectionInterface
+    #define COLLECTION_TYPE_BOARD 'B'
+    #define COLLECTION_TYPE_LIST 'L'
 
     typedef char MenuOption;
 
@@ -38,11 +41,11 @@
     // boards menu and interfaces
     MenuOption boardsMenu();
     Board *createBoardInterface(long);
-    long selectBoardInterface(List *);
 
     // task lists menu and interfaces
     MenuOption listsMenu();
     TaskList *createTaskListInterface(Board *);
-    long selectTaskListInterface(List *);
 
+    // used for selecting board/list
+    long selectCollectionInterface(List *collection, MenuOption collectionType);
 #endif //BULLETIN_BOARDS

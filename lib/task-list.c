@@ -32,7 +32,6 @@ TaskList *createTaskList(Board *containerBoard, char title[])
         return taskList;
     }
     strncpy(taskList->title, title, MAX_TITLE_LENGTH - 1);
-    printf("stage 1 done!\n");
     if (now != -1)
     {
         char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
@@ -47,30 +46,23 @@ TaskList *createTaskList(Board *containerBoard, char title[])
             fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER);
             fclose(taskListFile);
         }
-    printf("stage 2 done!\n");
 
         // now add new items
         FILE *taskListFile = fopen(fileLocation, "a");
         if (taskListFile)
         {
-            printf("stage 3 done!\n");
             fprintf(taskListFile, "%ld%s\"%s\"%s%ld\n", taskList->id, COLUMN_DELIMITER, taskList->title,
                     COLUMN_DELIMITER, taskList->board->ownerId); // append new board to file
             fclose(taskListFile);
-            printf("stage 4 done!\n");
         }
         else
         {
-            printf("stage 1 error!\n");
             TaskList_failure(taskList, "Cannot save List data!");
-            printf("stage 1 error done!\n");
         }
     }
     else
     {
-        printf("stage 2 error!\n");
         TaskList_failure(taskList, "Cannot assign id to this new List!");
-        printf("stage 2 error done!\n");
     }
     _fcloseall(); // Just to make sure
     return taskList;
@@ -156,7 +148,7 @@ void TaskList_failure(TaskList *taskList, string msg)
 
 void TaskList_print(TaskList *taskList)
 {
-    printf("Your selected taskList is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ");
+    printf("Your selected List is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ", " ");
     PRINT_DASH_ROW();
     printf("%10ld\t\t%10ld\t\t%10ld\t\t%s\n", taskList->id, taskList->board->ownerId, taskList->board->id, taskList->title);
 }
