@@ -7,7 +7,7 @@
 
     #define MAX_FILENAME_LENGTH 256
     #define MAX_TITLE_LENGTH 128
-
+    #define MAX_LONG_NUMBER_LENGTH 20  // 2^64 has 20 digits
     // string identifiers
     // the two constant/macro(s) below, is used for defining c strings easier, specially when defining dynamic length ones
     #define string char* // these string must each be defined in a separate line
@@ -17,7 +17,7 @@
     // Data related MACROS:
     #define FOLDER_DATA "Data"
     #define APP_CONFIG_FILE FOLDER_DATA "/app"
-    #define SET_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA "/%s/%ld.csv", variations, identifier)
+    #define SET_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA "/%s/%llu.csv", variations, identifier)
     #define SET_USER_DATA_FILE(dest, variations, identifier) snprintf(dest, sizeof(dest), FOLDER_DATA "/%s/%s.csv", variations, identifier)
     #define ENCODE_SALT "abXN_H-d!~"
     #define MAX_ENCODED_STRING_LENGTH(MAX_INPUT_LENGTH) MAX_INPUT_LENGTH + 2 * strlen(ENCODE_SALT) + 1
@@ -38,10 +38,13 @@
 
     #define ABS(x) x >= 0 ? x : x * -1
     #define DIFF(x, y) ABS(x - y)
+    
+    typedef unsigned long long Long; // long long(8 bytes) is different from 'long'(4 bytes); we use long long to make sure our IDs and indices are always in range.
+    // Long is just shortcut for long long
 
-    long  MIN(const long a, const long b);
-    long  MAX(const long a, const long b);
-    void Free(short count, ...);
+    Long MIN(const Long a, const Long b);
+    Long MAX(const Long a, const Long b);
+    void Free(short count, ...); // free multiple pointer locations
     string encodeString(string input);
 
     void getLine(string dest, string inputMessage);
@@ -55,7 +58,7 @@
     #define CONFIG_LOGGED_IN_USER 0
     typedef struct AppConfig
     {
-        long currentUser;
+        Long currentUser;
         // etc...
     } AppConfig;
     void updateAppConfig(AppConfig *config);

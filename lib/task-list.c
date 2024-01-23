@@ -23,7 +23,7 @@ TaskList *createTaskList(Board *containerBoard, char title[])
     TaskList *taskList = newTaskList();
     time_t now = time(NULL);
     taskList->board = containerBoard;
-    // TODO: is it ok to have same name boards?
+
     if (strlen(title) > MAX_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
@@ -36,14 +36,14 @@ TaskList *createTaskList(Board *containerBoard, char title[])
     {
         char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
 
-        taskList->id = (long)now;
-        // the boards created by a user will be tored in a file in Boards folder, named by the id of the board owner
+        taskList->id = (Long)now;
+        // the task list created by a user will be tored in a file in task list folder, named by the id of the container board id
         SET_DATA_FILE(fileLocation, FOLDER_LISTS, containerBoard->id); // tasks are saved in Lists folder under the filename of board->id
         if (!fileExists(fileLocation))
         {
-            // creste the file and add the header row
+            // create the file and add the header row
             FILE *taskListFile = fopen(fileLocation, "w");
-            fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER);
+            fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER);
             fclose(taskListFile);
         }
 
@@ -51,8 +51,8 @@ TaskList *createTaskList(Board *containerBoard, char title[])
         FILE *taskListFile = fopen(fileLocation, "a");
         if (taskListFile)
         {
-            fprintf(taskListFile, "%ld%s\"%s\"%s%ld\n", taskList->id, COLUMN_DELIMITER, taskList->title,
-                    COLUMN_DELIMITER, taskList->board->ownerId); // append new board to file
+            fprintf(taskListFile, "%llu%s\"%s\"%s%llu\n", taskList->id, COLUMN_DELIMITER, taskList->title,
+                    COLUMN_DELIMITER, taskList->board->ownerId); // append new task list to file
             fclose(taskListFile);
         }
         else
@@ -70,7 +70,7 @@ TaskList *createTaskList(Board *containerBoard, char title[])
 
 List *getTaskLists(Board *containerBoard)
 {
-        // read all the boards from the file
+        // read all the task list from the file
     List *taskLists = newList();
     char taskListsFilename[MAX_FILENAME_LENGTH] = {'\0'};
     SET_DATA_FILE(taskListsFilename, FOLDER_LISTS, containerBoard->id); // now taskListsFile contains the address of the board file that contains desired user board list ata.
@@ -103,7 +103,7 @@ List *getTaskLists(Board *containerBoard)
             // each task list occupies to lines
             // first line is its id and the second is the title
             strncpy(nextTaskList->title, title, MAX_TITLE_LENGTH);
-            nextTaskList->id = atol(id); // convert read id to long
+            nextTaskList->id = atol(id); // convert read id to Long
             nextTaskList->board = containerBoard;
             if (!nextTaskList->id)
             {
@@ -117,7 +117,7 @@ List *getTaskLists(Board *containerBoard)
             List_add(taskLists, nextTaskList);
         }
     }
-    free(nextTaskList); // at last step of for, a new empty board is allocated that is not needed
+    free(nextTaskList); // at last step of for, a new empty task list is allocated that is not needed
 
     fclose(taskListsFile);
     return taskLists;
@@ -150,5 +150,5 @@ void TaskList_print(TaskList *taskList)
 {
     printf("Your selected List is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ", " ");
     PRINT_DASH_ROW();
-    printf("%10ld\t\t%10ld\t\t%10ld\t\t%s\n", taskList->id, taskList->board->ownerId, taskList->board->id, taskList->title);
+    printf("%10llu\t\t%10llu\t\t%10llu\t\t%s\n", taskList->id, taskList->board->ownerId, taskList->board->id, taskList->title);
 }

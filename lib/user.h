@@ -10,7 +10,7 @@
 
     typedef struct User
     {
-        long id; // will be set by the current time value
+        Long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
         char name[MAX_USERNAME_LENGTH];
 
@@ -21,7 +21,7 @@
         // it can be checked by this flag
 
         char error[MAX_RESPONSE_LENGTH];
-    } User;
+    } User; // we use typedef to make shortcuts, so we use for example 'User' instead of 'struct User'
 
     // prototypes:
     User *newUser();

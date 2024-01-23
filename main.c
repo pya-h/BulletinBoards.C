@@ -1,11 +1,11 @@
 #include "app/bulletin-boards.h"
-
+#include "lib/task.h"
 // THINK: write a professional getch() ?
 // TODO: this one will count the number of options and gets key until the max length/count
 int main()
 {
     MenuOption choice;
-    long selectedItemIndex = -1; // choice is of type short and is not suitable with menus with too many items.
+    Long selectedItemIndex = -1; // choice is of type short and is not suitable with menus with too many items.
     Session session = newSession();
     initializeData();
 
@@ -19,20 +19,20 @@ int main()
                 switch (choice)
                 {
                 case MENU_OPTION_CREATE:
-                {
-                    Board *newBoard = createBoardInterface(session.user->id);
-                    session.error = Board_getError(newBoard);
-                    if (!session.error) // if board created successfully
-                    {
-                        List_add(session.boards, newBoard);
-                        printf("Board successfully created.\n");
+                    { // because Board is defined inside we used {}
+                        Board *nextBoard = createBoardInterface(session.user->id);
+                        session.error = Board_getError(nextBoard);
+                        if (!session.error) // if board created successfully
+                        {
+                            List_add(session.boards, nextBoard);
+                            printf("Board successfully created.\n");
+                        }
+                        else
+                        {
+                            fprintf(stderr, session.error);
+                        }
                     }
-                    else
-                    {
-                        fprintf(stderr, session.error);
-                    }
-                }
-                break;
+                    break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
                     session.error = List_getError(session.boards);
@@ -49,7 +49,7 @@ int main()
                     if (!selectedBoard)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, session.boards->length);
+                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.boards->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
@@ -73,12 +73,12 @@ int main()
                 {
                 case MENU_OPTION_CREATE:
                 {
-                    TaskList *newTaskList = createTaskListInterface(session.currentBoard);
-                    session.error = TaskList_getError(newTaskList);
+                    TaskList *nextTaskList = createTaskListInterface(session.currentBoard);
+                    session.error = TaskList_getError(nextTaskList);
                     if (!session.error) // if board created successfully
                     {
-                        // List_add(session.lists, newBoard);
-                        //  printf("List successfully created and placed on the %s board.\n", session.board->);
+                        List_add(session.lists, nextTaskList);
+                        printf("List successfully created and placed on '%s' board.\n", session.currentBoard->title);
                     }
                     else
                     {
@@ -102,7 +102,7 @@ int main()
                     if (!selectedTaskList)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %ld, but the range is: [1-%ld]\n", selectedItemIndex + 1, session.lists->length);
+                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.lists->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }

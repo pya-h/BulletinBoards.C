@@ -19,11 +19,11 @@
     {
         ListItem *first, *last;
         char error[MAX_RESPONSE_LENGTH];
-        long length;
+        Long length;
         // next two fields is like a caching mechanism; it remembers the last item index that is accessed
         // when getting another item of a list, if the target index is close to this lastAccessIndex, we use that to process list
         // useful when using a List_at in a for loop
-        long lastAccessedIndex;
+        Long lastAccessedIndex;
         ListItem *lastAccessedItem;
     } List;
 
@@ -32,9 +32,9 @@
     ListItem *newListItem(void *data);
     void ListItem_dump(ListItem *);
     ListItem *List_add(List *list, void *data);
-    void *List_at(List *list, long index);
-    short List_delete(List *list, long index);
+    void *List_at(List *list, Long index);
+    short List_delete(List *list, Long index);
     string List_getError(List *list);
-    // void **List_toArray(List *list, long index);
+    // void **List_toArray(List *list, Long index);
     
 #endif //LINK_LIST_H

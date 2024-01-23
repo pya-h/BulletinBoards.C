@@ -4,11 +4,11 @@
     #include "link-list.h"
     #include "board.h"
     #define FOLDER_LISTS "Lists"
-    #define MAX_LIST_FILE_ROW_LENGTH MAX_TITLE_LENGTH + 30 // 30 as the length of id, ownerId and some extra characters such as comma(delimiter) or double quatation
+    #define MAX_LIST_FILE_ROW_LENGTH MAX_TITLE_LENGTH + MAX_LONG_NUMBER_LENGTH*2 + 10 // 50 as the length of id, ownerId and some extra characters such as comma(delimiter) or double quatation
 
     typedef struct TaskList
     {
-        long id; // will be set by the current time value
+        Long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
         char title[MAX_TITLE_LENGTH];
         Board *board; // the board that contains the list
@@ -18,11 +18,11 @@
 
     // prototypes:
     TaskList *newTaskList();
-    TaskList *createTaskList(Board *containerBoard, char title[]);
-    List *getTaskLists(Board *containerBoard);
-    short TaskLists_save(List *TaskLists);
+    TaskList *createTaskList(Board *, char []);
+    List *getTaskLists(Board *);
+    short TaskLists_save(List *);
     string TaskList_getError(TaskList *);
-    void TaskList_reset(TaskList *TaskList);
-    void TaskList_failure(TaskList *taskList, string msg);
-    void TaskList_print(TaskList *taskList);
+    void TaskList_reset(TaskList *);
+    void TaskList_failure(TaskList *, string);
+    void TaskList_print(TaskList *);
 #endif // TASK_LIST_H

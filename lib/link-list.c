@@ -44,7 +44,7 @@ ListItem *List_add(List *list, void *data)
     return list->last;
 }
 
-void *List_at(List *list, long index)
+void *List_at(List *list, Long index)
 {
     // as we have first and last nodes in the list, and the length of the list
     // we can determine which way is faster to process until we reach the desired item: processing from first to index,
@@ -71,7 +71,7 @@ void *List_at(List *list, long index)
     {
         if (index == list->lastAccessedIndex)
             return list->lastAccessedItem->data;
-        const long indexDistanceFromLastAccessdIndex = DIFF(index, list->lastAccessedIndex); // just for preventing calculating this twice [cause next if statement uses this value twice and has two conditions]
+        const Long indexDistanceFromLastAccessdIndex = DIFF(index, list->lastAccessedIndex); // just for preventing calculating this twice [cause next if statement uses this value twice and has two conditions]
         if (indexDistanceFromLastAccessdIndex < DIFF(0, index) &&
             indexDistanceFromLastAccessdIndex < DIFF(list->length - 1, index))
         {
@@ -106,14 +106,14 @@ void ListItem_dump(ListItem *trash)
     free(trash);
 }
 
-short List_delete(List *list, long index)
+short List_delete(List *list, Long index)
 {
     // TODO:
     if (!List_at(list, index)) // updates .lastAccessedItem and .lastAccessedIdex
         return 0;              // item was not found so dont do anything.
     ListItem *trash = list->lastAccessedItem;
     list->lastAccessedItem = NULL;
-    list->lastAccessedIndex = -1; // last accessed item is deleted and no longer in the list; so reset these two values related to it
+    list->lastAccessedIndex = -1; // last accessed item is deleted and no Longer in the list; so reset these two values related to it
 
     if (trash == list->first)
     { // or

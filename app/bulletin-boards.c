@@ -60,7 +60,7 @@ MenuOption boardsMenu()
     return option;
 }
 
-Board *createBoardInterface(long ownerId)
+Board *createBoardInterface(Long ownerId)
 {
     char title[MAX_ANY_STRING_LENGTH];
     printf("\n\nBoard Creation:");
@@ -92,15 +92,15 @@ MenuOption listsMenu()
 }
 
 // TODO: THIS FUNCTION and selectBoardInterface may be merged
-long selectCollectionInterface(List *collection, MenuOption collectionType)
+Long selectCollectionInterface(List *collection, MenuOption collectionType)
 {
-    long choice;
+    Long choice;
     string title;
     string error;
     CLEAR_SCREEN();
     printf("\nWhich %s you want to see? [Select & Hit Enter]\n", collectionType == COLLECTION_TYPE_BOARD ? "Board" : "List");
     PRINT_DASH_ROW();
-    for (long i = 0; i < collection->length; i++)
+    for (Long i = 0; i < collection->length; i++)
     {
         if (collectionType == COLLECTION_TYPE_BOARD)
         {
@@ -118,8 +118,8 @@ long selectCollectionInterface(List *collection, MenuOption collectionType)
         if (error)
             fprintf(stderr, "\nX\t%2d\t%s", i + 1, error);
         else
-            printf("\n\t%2d\t%s ", i + 1, title);
+            printf("\n%10llu\t%s ", i + 1, title);
     }
-    scanf("%ld", &choice);
+    scanf("%llu", &choice);
     return choice;
 }

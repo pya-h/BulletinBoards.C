@@ -23,12 +23,12 @@ void Board_failure(Board *board, string msg)
     sprintf(board->error, "Unexpected Behaviour:\t%s\n", msg);
 }
 
-Board *createBoard(long ownerId, char title[])
+Board *createBoard(Long ownerId, char title[])
 {
     Board *board = newBoard();
     time_t now = time(NULL);
     board->ownerId = ownerId;
-    // TODO: is it ok to have same name boards?
+  
     if(strlen(title) > MAX_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
@@ -40,8 +40,8 @@ Board *createBoard(long ownerId, char title[])
     if (now != -1)
     {
         char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
-        board->id = (long)now;
-        // the boards created by a user will be tored in a file in Boards folder, named by the id of the board owner
+        board->id = (Long)now;
+        // the boards created by a user will be stored in a file in Boards folder, named by the id of the board owner
         SET_DATA_FILE(fileLocation, FOLDER_BOARDS, ownerId);
         if (!fileExists(fileLocation))
         {
@@ -54,7 +54,7 @@ Board *createBoard(long ownerId, char title[])
         FILE *boardFile = fopen(fileLocation, "a");
         if (boardFile)
         {
-            fprintf(boardFile, "%ld%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
+            fprintf(boardFile, "%llu%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
             fclose(boardFile);
         }
         else
@@ -70,7 +70,7 @@ Board *createBoard(long ownerId, char title[])
     return board;
 }
 
-List *getBoards(long ownerId)
+List *getBoards(Long ownerId)
 {
     // read all the boards from the file
     List *boards = newList();
@@ -104,7 +104,7 @@ List *getBoards(long ownerId)
             // each board occupies to lines
             // first line is its id and the second is the title
             strncpy(nextBoard->title, title, MAX_TITLE_LENGTH);
-            nextBoard->id = atol(id); // convert read id to long
+            nextBoard->id = atol(id); // convert read id to Long
             nextBoard->ownerId = ownerId;
             if (!nextBoard->id)
             {
@@ -150,5 +150,5 @@ void Board_print(Board *board)
 {
     printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
-    printf("%10ld\t\t%10ld\t\t%s\n", board->id, board->ownerId, board->title);
+    printf("%10llu\t\t%10llu\t\t%s\n", board->id, board->ownerId, board->title);
 }

@@ -15,11 +15,11 @@ short prepareFolder(char folder[], short insideData)
     return !_mkdir(folder);
 }
 
-long MIN(const long a, const long b)
+Long MIN(const Long a, const Long b)
 {
     return a <= b ? a : b;
 }
-long MAX(const long a, const long b)
+Long MAX(const Long a, const Long b)
 {
     return a >= b ? a : b;
 }

@@ -40,12 +40,12 @@
 
     // boards menu and interfaces
     MenuOption boardsMenu();
-    Board *createBoardInterface(long);
+    Board *createBoardInterface(Long);
 
     // task lists menu and interfaces
     MenuOption listsMenu();
     TaskList *createTaskListInterface(Board *);
 
     // used for selecting board/list
-    long selectCollectionInterface(List *collection, MenuOption collectionType);
+    Long selectCollectionInterface(List *collection, MenuOption collectionType);
 #endif //BULLETIN_BOARDS
