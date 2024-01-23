@@ -32,6 +32,7 @@
     // we can simply be changed to something else
     #define CLEAR_SCREEN() system("cls")
     #define GET_KEY() _getch() - '0' // _getch() returns an ASCII code,
+    #define GET_CHAR() _getch(); //return the actual char
     // substracting it by '0'(=48) will convert it to normal integer.
     #define PRESS_KEY_TO_CONTINUE() system("pause")
     #define PRINT_DASH_ROW() printf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")

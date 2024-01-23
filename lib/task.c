@@ -1,4 +1,6 @@
 #include "task.h"
+#include <stdlib.h>
+#include <string.h>
 
 void Task_reset(Task *task)
 {
@@ -14,7 +16,7 @@ Task *newTask()
     return task;
 }
 
-Task *createTask(TaskList *containerTaskList, char title[])
+Task *createTask(TaskList *containerTaskList, char title[], Priority priority, string strDeadline)
 {
     Task *task = newTask();
     time_t now = time(NULL);
@@ -28,6 +30,16 @@ Task *createTask(TaskList *containerTaskList, char title[])
         return task;
     }
     strncpy(task->title, title, MAX_TASK_TITLE_LENGTH - 1);
+    task->priority = priority;
+    if (sscanf(strDeadline, "%d-%d-%d", &(task->deadline.tm_year), &(task->deadline.tm_mon), &(task->deadline.tm_mday)) != 3)
+    {
+        char err[MAX_RESPONSE_LENGTH] = {'\0'};
+        sprintf(err, "Deadline is in wrong format! Enter it in this format: Year-Month-Day", MAX_TASK_TITLE_LENGTH);
+        Task_failure(task, err);
+        return task;
+    }
+    printf("\ndate = %d %d %d\n", task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday);
+
     if (now != -1)
     {
         char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
@@ -48,9 +60,10 @@ Task *createTask(TaskList *containerTaskList, char title[])
         FILE *taskFile = fopen(fileLocation, "a");
         if (taskFile)
         {
-            fprintf(taskFile, "%llu%s\"%s\"%s%c%s%s%s%llu%s%llu\n",
-                    task->id, COLUMN_DELIMITER, task->title, COLUMN_DELIMITER, task->priority, COLUMN_DELIMITER, task->deadline, // task data
-                    COLUMN_DELIMITER, task->taskList->board->id, COLUMN_DELIMITER, task->taskList->board->ownerId);              // append new task to file
+            fprintf(taskFile, "%llu%s\"%s\"%s%c%s%d-%d-%d%s%llu%s%llu\n",
+                    task->id, COLUMN_DELIMITER, task->title, COLUMN_DELIMITER, task->priority, COLUMN_DELIMITER,    // task data
+                    task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday,                          // task deadline data
+                    COLUMN_DELIMITER, task->taskList->board->id, COLUMN_DELIMITER, task->taskList->board->ownerId); // append new task to file
             // owner id and board id are saved just to check data is not modified while reading
             // Its for reassuring purpose
             fclose(taskFile);
@@ -73,7 +86,7 @@ List *getTasks(TaskList *containerTaskList)
     // read all the task list from the file
     List *tasks = newList();
     char tasksFilename[MAX_FILENAME_LENGTH] = {'\0'};
-    SET_DATA_FILE(tasksFilename, FOLDER_LISTS, containerTaskList->id); // now tasksFile contains the address of the TaskList file that contains desired user TaskList list ata.
+    SET_DATA_FILE(tasksFilename, FOLDER_TASKS, containerTaskList->id); // now tasksFile contains the address of the TaskList file that contains desired user TaskList list ata.
     FILE *tasksFile = fopen(tasksFilename, "r");
     if (!tasksFile)
     {
@@ -97,9 +110,10 @@ List *getTasks(TaskList *containerTaskList)
             Date deadline;
             // this one is used just to check values are correct
             title = trimColumnValue(title);
-            if (!id || !title || !priority || !strDeadline || strptime(strDeadline, "%Y-%m-%d", &deadline) || !ownerId || !boardId ||
+            if (!id || !title || !priority || !strDeadline ||
+                sscanf(strDeadline, "%d-%d-%d", &deadline.tm_year, &deadline.tm_mon, &deadline.tm_mday) != 3 || !ownerId || !boardId ||
                 atol(boardId) != containerTaskList->board->id || atol(ownerId) != containerTaskList->board->ownerId)
-            { // checks all possible errors, and also converts deadline from string to Date(struct tm)
+            {                         // checks all possible errors, and also converts deadline from string to Date(struct tm)
                 if (!feof(tasksFile)) // if file is not ended and this condition happended, then the data of this Task is corrupted
                     Task_failure(nextTask, "It seems the data related to this task is corrupted or modified!");
                 continue;
@@ -153,9 +167,19 @@ void Task_failure(Task *task, string msg)
     sprintf(task->error, "Operation Failed:\t%s\n", msg);
 }
 
+string Priority_toString(Priority priority)
+{
+
+    return (string)(priority == HIGH     ? "High"
+                    : priority == MEDIUM ? "Medium"
+                    : priority == LOW    ? "Low"
+                                         : "Unknown!");
+}
+
 void Task_print(Task *task)
 {
-    // printf("Your selected  is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ", " ");
+    printf("Your selected Task:\n\n  Id%6s\t\tPriority\t\tDeadline%2s\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
-    // printf("%10llu\t\t%10llu\t\t%10llu\t\t%s\n", task->id, task->taskList->board->ownerId, task->taskList->id, task->title);
+    printf("%10llu\t\t%8s\t\t%04d-%02d-%02d\t\t%s\n", task->id, Priority_toString(task->priority),
+           task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday, task->title);
 }

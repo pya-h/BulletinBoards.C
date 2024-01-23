@@ -7,14 +7,15 @@ Session newSession()
     s.user = newUser();
     s.currentBoard = NULL;
     s.currentList = NULL;
+    s.currentTask = NULL;
     return s;
 }
 
 void initializeData()
 {
     // will make sure all folders are created & ready to hold info.
-    const short numberOfFolders = 3;
-    string folders[] = {FOLDER_USERS, FOLDER_BOARDS, FOLDER_LISTS};
+    const short numberOfFolders = 4;
+    string folders[] = {FOLDER_USERS, FOLDER_BOARDS, FOLDER_LISTS, FOLDER_TASKS};
     prepareFolder(FOLDER_DATA, 0); // Create the data folder itself
     for (short i = 0; i < numberOfFolders; i++)
     {
@@ -64,7 +65,7 @@ Board *createBoardInterface(Long ownerId)
 {
     char title[MAX_ANY_STRING_LENGTH];
     printf("\n\nBoard Creation:");
-
+    PRINT_DASH_ROW();
     getLine(title, "\tTitle:\t");
     return createBoard(ownerId, title);
 }
@@ -72,19 +73,21 @@ Board *createBoardInterface(Long ownerId)
 TaskList *createTaskListInterface(Board *containerBoard)
 {
     char title[MAX_ANY_STRING_LENGTH];
-    printf("\n\nList Creation");
-
+    printf("\n\nCreate List:");
+    PRINT_DASH_ROW();
     getLine(title, "\tTitle:\t");
     return createTaskList(containerBoard, title);
 }
 // ** Section: Boards **
-MenuOption listsMenu()
+MenuOption listsMenu(MenuOption collectioType)
 {
     MenuOption option;
     printf("\nHow can I help you?\n");
     PRINT_DASH_ROW();
-    printf("\t%d\tView/Open Lists\n\t%d\tCreate New List\n\t%d\tDelete/Edit List\n\t%d\tGo Back",
-           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY, MENU_OPTION_GOBACK);
+    string collectionName = collectioType == COLLECTION_TYPE_LIST ? "List" : "Task";
+    printf("\t%d\tView/Open %ss\n\t%d\tCreate New %s\n\t%d\tDelete/Edit %s\n\t%d\tGo Back",
+           MENU_OPTION_VIEW, collectionName, MENU_OPTION_CREATE, 
+           collectionName, MENU_OPTION_MODIFY, collectionName, MENU_OPTION_GOBACK);
     while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
            option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW && option != MENU_OPTION_GOBACK)
         ;
@@ -98,7 +101,8 @@ Long selectCollectionInterface(List *collection, MenuOption collectionType)
     string title;
     string error;
     CLEAR_SCREEN();
-    printf("\nWhich %s you want to see? [Select & Hit Enter]\n", collectionType == COLLECTION_TYPE_BOARD ? "Board" : "List");
+    printf("\nWhich %s you want to see? [Select & Hit Enter]\n", collectionType == COLLECTION_TYPE_BOARD ? "Board" :
+        collectionType == COLLECTION_TYPE_LIST ? "List" : "Task");
     PRINT_DASH_ROW();
     for (Long i = 0; i < collection->length; i++)
     {
@@ -108,11 +112,16 @@ Long selectCollectionInterface(List *collection, MenuOption collectionType)
             error = Board_getError(board);
             title = board->title;
         }
-        else
+        else if(collectionType == COLLECTION_TYPE_LIST)
         {
             TaskList *taskList = (TaskList*)List_at(collection, i);
             error = TaskList_getError(taskList);
             title = taskList->title;
+        } else {
+            // task
+            Task *task = (Task*)List_at(collection, i);
+            error = Task_getError(task);
+            title = task->title;
         }
 
         if (error)
@@ -122,4 +131,21 @@ Long selectCollectionInterface(List *collection, MenuOption collectionType)
     }
     scanf("%llu", &choice);
     return choice;
+}
+
+Task *createTaskInterface(TaskList *containerTaskList) {
+    char title[MAX_ANY_STRING_LENGTH];
+    char deadline[MAX_DATE_LENGTH];
+    printf("\n\nAdd Task:");
+    PRINT_DASH_ROW();
+    getLine(title, "\tTitle:\t");
+    printf("Select Priority:\n\t%c: High\n\t%c: Medium\n\t%c: Low", HIGH, MEDIUM, LOW);
+    Priority priority;
+    do {
+        char c = GET_CHAR();
+        c = c >= 'a' && c <= 'z' ? c + ('A' - 'a') : c;
+        priority = c;
+    } while(priority != HIGH && priority != MEDIUM && priority != LOW); // get priority until a valid value is received!
+    getLine(deadline, "Date (as Y-M-D): ");
+    return createTask(containerTaskList, title, priority, deadline);
 }

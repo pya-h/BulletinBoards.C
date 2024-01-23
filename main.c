@@ -1,5 +1,5 @@
 #include "app/bulletin-boards.h"
-#include "lib/task.h"
+
 // THINK: write a professional getch() ?
 // TODO: this one will count the number of options and gets key until the max length/count
 int main()
@@ -68,7 +68,7 @@ int main()
             else if (!session.currentList)
             {
                 Board_print(session.currentBoard);
-                choice = listsMenu();
+                choice = listsMenu(COLLECTION_TYPE_LIST);
                 switch (choice)
                 {
                 case MENU_OPTION_CREATE:
@@ -95,7 +95,7 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
-                    selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_BOARD) - 1; // menu items are started at 1
+                    selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_LIST) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     TaskList *selectedTaskList = (TaskList *)List_at(session.lists, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -109,14 +109,14 @@ int main()
                     session.currentList = selectedTaskList;
                     // TODO: Load TASKS here
                     // then check error
-                    /*
-                    session.tasks = getTasks(session.currentList->id);
-                    session.error = List_getError(session.lists);
+                    
+                    session.tasks = getTasks(session.currentList);
+                    session.error = List_getError(session.tasks);
                     if (session.error)
                     {
                         fprintf(stderr, "Fatal Error: %s", session.error);
                         break; // close the app.
-                    }*/
+                    }
                     CLEAR_SCREEN();
                     continue; // continue the loop, so the board will be printed imedately in next if
                     // because we want the user to see board data while he sees List menu
@@ -128,9 +128,61 @@ int main()
                     continue; // immediately go back to boards menu
                 }
             }
-            else
+            else if(!session.currentTask)
             {
                 TaskList_print(session.currentList);
+                choice = listsMenu(COLLECTION_TYPE_TASK);
+                switch (choice)
+                {
+                case MENU_OPTION_CREATE:
+                {
+                    Task *nextTask = createTaskInterface(session.currentList);
+                    session.error = Task_getError(nextTask);
+                    if (!session.error) // if board created successfully
+                    {
+                        List_add(session.tasks, nextTask);
+                        printf("Task successfully added to '%s' List.\n", session.currentList->title);
+                    }
+                    else
+                    {
+                        fprintf(stderr, session.error);
+                    }
+                }
+                break;
+                case MENU_OPTION_VIEW:
+                case MENU_OPTION_MODIFY:
+                    session.error = List_getError(session.tasks);
+                    if (session.error)
+                    {
+                        // means file cant be open
+                        fprintf(stderr, "Operation Failure!\t%s", session.error);
+                        break;
+                    }
+                    selectedItemIndex = selectCollectionInterface(session.tasks, COLLECTION_TYPE_TASK) - 1; // menu items are started at 1
+                    // now selectedItemIndex is the index of board
+                    Task *selectedTask = (Task *)List_at(session.tasks, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
+
+                    if (!selectedTask)
+                    {
+                        // if index isin valid amd a NULL item returned:
+                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.tasks->length);
+                        fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
+                        break; // break out of switch
+                    }
+                    session.currentTask = selectedTask;
+                    
+                    CLEAR_SCREEN();
+                    continue; // continue the loop, so the board will be printed imedately in next if
+                    // because we want the user to see board data while he sees List menu
+                case MENU_OPTION_GOBACK:
+                    free(session.tasks);
+                    session.currentList = NULL;
+                    CLEAR_SCREEN();
+                    continue; // immediately go back to boards menu
+                }
+            } else {
+                Task_print(session.currentTask);
+                session.currentTask = NULL;
             }
         }
         else

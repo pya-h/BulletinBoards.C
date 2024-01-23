@@ -3,10 +3,12 @@
     #include <time.h>
     #include "base.h"
     #include "task-list.h"
+    #include <stdio.h>
 
     #define MAX_TASK_TITLE_LENGTH 256
     #define FOLDER_TASKS "Tasks"
-    
+    #define MAX_DATE_LENGTH 16
+
     typedef struct tm Date;
 
     typedef enum Priority {
@@ -28,12 +30,12 @@
 
     void Task_reset(Task *);
     Task *newTask();
-    Task *createTask(TaskList *, char []);
-    List *getTasks(TaskList *containerList);
-    short Task_save(List *tasks);
+    Task *createTask(TaskList *, char [], Priority, string);
+    List *getTasks(TaskList *);
+    short Task_save(List *);
 
-    string Task_getError(Task *task);
+    string Task_getError(Task *);
     void Task_failure(Task *, string);
-    void Task_print(Task *task);
-
+    void Task_print(Task *);
+    string Priority_toString(Priority);
 #endif
