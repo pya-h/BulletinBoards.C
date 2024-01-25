@@ -136,6 +136,7 @@ int main()
                 break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
+                case MENU_OPTION_DELETE:
                     session.error = List_getError(session.lists);
                     if (session.error)
                     {
@@ -206,6 +207,7 @@ int main()
 
                         break;
                     }
+
                     if (session.error)
                     {
                         fprintf(stderr, "%s", session.error);
@@ -242,6 +244,7 @@ int main()
                 break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
+                case MENU_OPTION_DELETE:
                     session.error = List_getError(session.tasks);
                     if (session.error)
                     {
@@ -255,6 +258,8 @@ int main()
                         break;
                     }
                     selectedItemIndex = selectCollectionInterface(session.tasks, COLLECTION_TYPE_TASK) - 1; // menu items are started at 1
+                    if(selectedItemIndex == session.tasks->length)
+                        break;
                     // now selectedItemIndex is the index of board
                     Task *selectedTask = (Task *)List_at(session.tasks, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -265,11 +270,60 @@ int main()
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
-                    session.currentTask = selectedTask;
 
-                    CLEAR_SCREEN();
-                    continue; // continue the loop, so the board will be printed imedately in next if
-                    // because we want the user to see board data while he sees List menu
+                    CLEAR_SCREEN(); // clear screen for next section
+                    switch (choice)
+                    {
+                    case MENU_OPTION_VIEW:
+                        session.currentTask = selectedTask;                        
+                        continue; // continue the loop, so the board will be printed imedately in next if
+                    case MENU_OPTION_MODIFY:
+                    {
+                        char modifyType;
+                        Task_print(selectedTask);
+                        printf("What field do you want to modify?\n\t1 Title\n\t2 Deadline\n\t3 Priority\n\t4 Cancel");
+                        // force valid input
+                        while((modifyType = GET_KEY()) != 1 && modifyType != 2 && modifyType != 3 && modifyType != 4);
+                        if(modifyType == 4)
+                            break;
+                        if(modifyType == 1) {
+/*
+                            char oldTitle[MAX_TITLE_LENGTH] = {'\0'};
+                            printf("Modify List Name:\n");
+                            printf("\tCurrent Title: %s\n", selectedTaskList->title);
+                            if (!areYouSure("Modifying this list title"))
+                                break;
+                            PRINT_DASH_ROW();
+                            strncpy(oldTitle, selectedTaskList->title, MAX_TITLE_LENGTH); // save old title in case something goes wrong!
+                            getLine(selectedTaskList->title, "\tTitle:\t");
+                            if (TaskLists_save(session.lists, session.currentBoard->id)) // if the function returns 1 it means everything successfully worked out.
+                            {
+                                printf("\nTitle of the list changed successfully.\n");
+                            }
+                            else
+                            {
+                                // error happened while saving
+                                session.error = List_getError(session.lists);
+                                strncpy(selectedTaskList->title, oldTitle, MAX_TITLE_LENGTH); // reverse board title, because it hasnt been updated in database
+                            }
+                            */
+                        }
+                    }
+                    break;
+                    case MENU_OPTION_DELETE:
+                        printf("Board that you intend to delete:\n");
+                        TaskList_print(selectedTask);
+                        PRINT_DASH_ROW();
+                        if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                            break;
+
+                        break;
+                    }
+                    if (session.error)
+                    {
+                        fprintf(stderr, "%s", session.error);
+                    }
+                    break; // close the app.
                 case MENU_OPTION_GOBACK:
                     free(session.tasks);
                     session.currentList = NULL;
