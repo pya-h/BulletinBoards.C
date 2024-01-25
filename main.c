@@ -52,7 +52,7 @@ int main()
                     }
                     selectedItemIndex = selectCollectionInterface(session.boards, COLLECTION_TYPE_BOARD) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
-                    if(selectedItemIndex == session.boards->length)
+                    if (selectedItemIndex == session.boards->length)
                         break;
                     Board *selectedBoard = (Board *)List_at(session.boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
@@ -76,40 +76,39 @@ int main()
                         }
                         break; // if there was error, break out of inner switch to print out error
                     case MENU_OPTION_MODIFY:
+                    {
+                        char oldTitle[MAX_TITLE_LENGTH] = {'\0'};
+                        printf("Modify Board Name:\n");
+                        printf("\n\tCurrent Title: %s\n", selectedBoard->title);
+                        if (!areYouSure("Modifying this board title"))
+                            break;
+                        PRINT_DASH_ROW();
+                        strncpy(oldTitle, selectedBoard->title, MAX_TITLE_LENGTH); // save old title in case something goes wrong!
+                        getLine(selectedBoard->title, "\tTitle:\t");
+                        if (Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
                         {
-                            char oldTitle[MAX_TITLE_LENGTH] = {'\0'};
-                            printf("Modify Board Name:\n");
-                            printf("\n\tCurrent Title: %s\n", selectedBoard->title);
-                            if (!areYouSure("Modifying this board title"))
-                                break;
-                            PRINT_DASH_ROW();
-                            strncpy(oldTitle, selectedBoard->title, MAX_TITLE_LENGTH); // save old title in case something goes wrong!
-                            getLine(selectedBoard->title, "\tTitle:\t");
-                            if (Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
-                            {
-                                printf("\nTitle of the board successfully changed.\n");
-                            }
-                            else
-                            {
-                                // error happened while saving
-                                session.error = List_getError(session.boards);
-                                strncpy(selectedBoard->title, oldTitle, MAX_TITLE_LENGTH); // reverse board title, because it hasnt been updated in database
-
-                            }
+                            printf("\nTitle of the board changed successfully.\n");
                         }
-                        break;
+                        else
+                        {
+                            // error happened while saving
+                            session.error = List_getError(session.boards);
+                            strncpy(selectedBoard->title, oldTitle, MAX_TITLE_LENGTH); // reverse board title, because it hasnt been updated in database
+                        }
+                    }
+                    break;
                     case MENU_OPTION_DELETE:
                         printf("Board that you intend to delete:\n");
                         Board_print(selectedBoard);
                         PRINT_DASH_ROW();
-                        if(!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                        if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
                             break;
-                        
+
                         break;
                     }
                     if (session.error)
                     {
-                        fprintf(stderr, "Fatal Error: %s", session.error);
+                        fprintf(stderr, "%s", session.error);
                     }
                     break; // close the app.
                 }
@@ -150,7 +149,9 @@ int main()
                         break;
                     }
                     selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_LIST) - 1; // menu items are started at 1
-                    // now selectedItemIndex is the index of board
+                    if(selectedItemIndex == session.lists->length)
+                        break; // go back selected
+                    // now selectedItemIndex is the index of list
                     TaskList *selectedTaskList = (TaskList *)List_at(session.lists, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
                     if (!selectedTaskList)
@@ -160,20 +161,56 @@ int main()
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
-                    session.currentList = selectedTaskList;
-                    // TODO: Load TASKS here
-                    // then check error
 
-                    session.tasks = getTasks(session.currentList);
-                    session.error = List_getError(session.tasks);
+                    CLEAR_SCREEN(); // clear screen for next section
+                    switch (choice)
+                    {
+                    case MENU_OPTION_VIEW:
+                        session.currentList = selectedTaskList;
+                        session.tasks = getTasks(session.currentList);
+                        session.error = List_getError(session.tasks);
+
+                        if (!session.error)
+                        {             // if everything was successfull
+                            continue; // continue the loop, so the board will be printed imedately in next if
+                        }
+                        break; // if there was error, break out of inner switch to print out error
+                    case MENU_OPTION_MODIFY:
+                    {
+                        char oldTitle[MAX_TITLE_LENGTH] = {'\0'};
+                        printf("Modify List Name:\n");
+                        printf("\tCurrent Title: %s\n", selectedTaskList->title);
+                        if (!areYouSure("Modifying this list title"))
+                            break;
+                        PRINT_DASH_ROW();
+                        strncpy(oldTitle, selectedTaskList->title, MAX_TITLE_LENGTH); // save old title in case something goes wrong!
+                        getLine(selectedTaskList->title, "\tTitle:\t");
+                        if (TaskLists_save(session.lists, session.currentBoard->id)) // if the function returns 1 it means everything successfully worked out.
+                        {
+                            printf("\nTitle of the list changed successfully.\n");
+                        }
+                        else
+                        {
+                            // error happened while saving
+                            session.error = List_getError(session.lists);
+                            strncpy(selectedTaskList->title, oldTitle, MAX_TITLE_LENGTH); // reverse board title, because it hasnt been updated in database
+                        }
+                    }
+                    break;
+                    case MENU_OPTION_DELETE:
+                        printf("Board that you intend to delete:\n");
+                        TaskList_print(selectedTaskList);
+                        PRINT_DASH_ROW();
+                        if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                            break;
+
+                        break;
+                    }
                     if (session.error)
                     {
-                        fprintf(stderr, "Fatal Error: %s", session.error);
-                        break; // close the app.
+                        fprintf(stderr, "%s", session.error);
                     }
-                    CLEAR_SCREEN();
-                    continue; // continue the loop, so the board will be printed imedately in next if
-                    // because we want the user to see board data while he sees List menu
+                    break; // close the app.
                 case MENU_OPTION_GOBACK:
                     free(session.lists);
                     session.currentBoard = NULL;

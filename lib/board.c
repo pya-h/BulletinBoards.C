@@ -130,24 +130,24 @@ short Boards_save(List *boards, Long ownerId)
     // then the app should remove boards file data and replace its data with the updated data
     // that is stored in boards list
     char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
-    FILE *boardFile;
+    FILE *userBoardsFile;
     Board *board;
     SET_DATA_FILE(fileLocation, FOLDER_BOARDS, ownerId);
     // creste the file and add the header row
-    boardFile = fopen(fileLocation, "w");
-    if (!boardFile)
+    userBoardsFile = fopen(fileLocation, "w");
+    if (!userBoardsFile)
     {
-        List_failure(boards, "Cannot save Board data!");
+        List_failure(boards, "Cannot save Boards data!");
         return 0; // error happend
     }
 
-    fprintf(boardFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
+    fprintf(userBoardsFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
     for (int i = 0; i < boards->length; i++)
     {
         board = (Board *)List_at(boards, i);
-        fprintf(boardFile, "%llu%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
+        fprintf(userBoardsFile, "%llu%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // save all boards by board
     }
-    fclose(boardFile);
+    fclose(userBoardsFile);
     return 1;
 }
 
@@ -174,5 +174,5 @@ void Board_print(Board *board)
 
 short Board_delete(Board *board)
 {
-    
+
 }

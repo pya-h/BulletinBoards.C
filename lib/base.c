@@ -11,7 +11,7 @@ short prepareFolder(char folder[], short insideData)
         sprintf(path, "%s/%s", FOLDER_DATA, folder);
         return !_mkdir(path);
     }
-
+    
     return !_mkdir(folder);
 }
 
@@ -40,7 +40,7 @@ void getLine(string dest, string inputMessage)
     dest[0] = '\0';
     while (!dest[0])
     {
-        printf("\n%s", inputMessage);
+        printf("\r%s", inputMessage);
         gets(dest);
         removeNextlineCharacter(dest); // remove next line from end of string
     }

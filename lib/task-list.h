@@ -20,7 +20,7 @@
     TaskList *newTaskList();
     TaskList *createTaskList(Board *, char []);
     List *getTaskLists(Board *);
-    short TaskLists_save(List *);
+    short TaskLists_save(List *, Long);
     string TaskList_getError(TaskList *);
     void TaskList_reset(TaskList *);
     void TaskList_failure(TaskList *, string);
