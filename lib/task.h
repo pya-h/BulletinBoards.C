@@ -32,7 +32,7 @@
     Task *newTask();
     Task *createTask(TaskList *, char [], Priority, string);
     List *getTasks(TaskList *);
-    short Task_save(List *);
+    short Tasks_save(List *, Long);
 
     string Task_getError(Task *);
     void Task_failure(Task *, string);

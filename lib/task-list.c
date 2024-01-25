@@ -27,7 +27,7 @@ TaskList *createTaskList(Board *containerBoard, char title[])
     if (strlen(title) > MAX_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
-        sprintf(err, "Title of a list can not exceed %d characters!", MAX_TITLE_LENGTH);
+        sprintf(err, "Title of a list can not exceed %d characters!", MAX_RESPONSE_LENGTH);
         TaskList_failure(taskList, err);
         return taskList;
     }
@@ -123,7 +123,7 @@ List *getTaskLists(Board *containerBoard)
     return taskLists;
 }
 
-short TaskLists_save(List *taskLists, Long boardId)
+short TaskLists_save(List *taskLists, Long containerBoardId)
 {
     // this is used when a task list is modified or deleted
     // then the app should remove tasklist file data and replace its data with the updated data
@@ -131,7 +131,7 @@ short TaskLists_save(List *taskLists, Long boardId)
     char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
     FILE *taskListFile; // file related to the selected list of a selected board
     TaskList *taskList;
-    SET_DATA_FILE(fileLocation, FOLDER_LISTS, boardId);
+    SET_DATA_FILE(fileLocation, FOLDER_LISTS, containerBoardId);
     // create the file and add the header row
     taskListFile = fopen(fileLocation, "w");
     if (!taskListFile)

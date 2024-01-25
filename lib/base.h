@@ -31,7 +31,7 @@
     // some macros are just defined, so if they fail in some compiler,
     // we can simply be changed to something else
     #define CLEAR_SCREEN() system("cls")
-    #define GET_KEY() _getch() - '0' // _getch() returns an ASCII code,
+    #define GET_MENU_OPTION() _getch() - '0' // _getch() returns an ASCII code,
     #define GET_CHAR() _getch(); //return the actual char
     #define TO_UPPER(c) c >= 'a' && c <= 'z' ? c + ('A' - 'a') : c // convert lower case character (if it is)  to upper case
     // substracting it by '0'(=48) will convert it to normal integer.

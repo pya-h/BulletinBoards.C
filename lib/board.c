@@ -32,7 +32,7 @@ Board *createBoard(Long ownerId, char title[])
     if (strlen(title) > MAX_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
-        sprintf(err, "Title of a board can not exceed %d characters!", MAX_TITLE_LENGTH);
+        sprintf(err, "Title of a board can not exceed %d characters!", MAX_RESPONSE_LENGTH);
         Board_failure(board, err);
         return board;
     }
