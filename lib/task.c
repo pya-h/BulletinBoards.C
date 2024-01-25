@@ -25,7 +25,7 @@ Task *createTask(TaskList *containerTaskList, char title[], Priority priority, s
     if (strlen(title) > MAX_TASK_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
-        sprintf(err, "Title of a task can not exceed %d characters!", MAX_TASK_TITLE_LENGTH);
+        sprintf(err, "Title of a task can not exceed %d characters!", MAX_RESPONSE_LENGTH);
         Task_failure(task, err);
         return task;
     }
@@ -34,11 +34,10 @@ Task *createTask(TaskList *containerTaskList, char title[], Priority priority, s
     if (sscanf(strDeadline, "%d-%d-%d", &(task->deadline.tm_year), &(task->deadline.tm_mon), &(task->deadline.tm_mday)) != 3)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
-        sprintf(err, "Deadline is in wrong format! Enter it in this format: Year-Month-Day", MAX_TASK_TITLE_LENGTH);
+        sprintf(err, "Deadline is in wrong format! Enter it in this format: Year-Month-Day", MAX_RESPONSE_LENGTH);
         Task_failure(task, err);
         return task;
     }
-    printf("\ndate = %d %d %d\n", task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday);
 
     if (now != -1)
     {
@@ -144,8 +143,38 @@ List *getTasks(TaskList *containerTaskList)
     return tasks;
 }
 
-short Task_save(List *tasks)
+short Tasks_save(List *tasks, Long containerTaskListId)
 {
+    // save the list of tasks
+    // this is used when a task is modified; we clear the file and write all tasks again
+    // this way we dont need to search the file and modify the middle of the file, which is hard and slow in performance
+    // this is used when a task list is modified or deleted
+    // then the app should remove tasklist file data and replace its data with the updated data
+    // that is stored in taskLists list
+    char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
+    FILE *taskFile; // file related to the selected list of a selected board
+    Task *task;
+    SET_DATA_FILE(fileLocation, FOLDER_TASKS, containerTaskListId);
+    // create the file and add the header row
+    taskFile = fopen(fileLocation, "w");
+    if (!taskFile)
+    {
+        List_failure(tasks, "Cannot save Tasks data!");
+        return 0; // error happend
+    }
+    fprintf(taskFile, "Id%sTask Title%sPriority%sDeadline%sBoard Id%sOwner Id\n",
+            COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER, COLUMN_DELIMITER);
+
+    for (int i = 0; i < tasks->length; i++)
+    {
+        task = (Task *)List_at(tasks, i);
+        fprintf(taskFile, "%llu%s\"%s\"%s%c%s%d-%d-%d%s%llu%s%llu\n",
+                task->id, COLUMN_DELIMITER, task->title, COLUMN_DELIMITER, task->priority, COLUMN_DELIMITER,    // task data
+                task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday,                          // task deadline data
+                COLUMN_DELIMITER, task->taskList->board->id, COLUMN_DELIMITER, task->taskList->board->ownerId); // append new task to file
+    }
+    fclose(taskFile);
+    return 1;
 }
 
 string Task_getError(Task *task)
