@@ -53,11 +53,12 @@ MenuOption boardsMenu()
     MenuOption option;
     printf("\nHow can I help you?\n");
     PRINT_DASH_ROW();
-    printf("\t%d\tView/Open Boards\n\t%d\tCreate New Board\n\t%d\tDelete/Edit Board ",
-           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY);
-    while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
-           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW)
-        ;
+    printf("\t%d\tView/Open Boards\n\t%d\tCreate New Board\n\t%d\tModify Board Title\n\t%d\tDelete Board Title ",
+           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY, MENU_OPTION_DELETE);
+    while ((option = GET_KEY()) != MENU_OPTION_CREATE && option != MENU_OPTION_DELETE &&
+           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW) ; //get input until its valid
+
+    puts("\n");
     return option;
 }
 
@@ -85,12 +86,14 @@ MenuOption listsMenu(MenuOption collectioType)
     printf("\nHow can I help you?\n");
     PRINT_DASH_ROW();
     string collectionName = collectioType == COLLECTION_TYPE_LIST ? "List" : "Task";
-    printf("\t%d\tView/Open %ss\n\t%d\tCreate New %s\n\t%d\tDelete/Edit %s\n\t%d\tGo Back",
+    printf("\t%d\tView/Open %ss\n\t%d\tCreate New %s\n\t%d\tModify %s\n\t%d\tDelete %s\n\t%d\tGo Back",
            MENU_OPTION_VIEW, collectionName, MENU_OPTION_CREATE, 
-           collectionName, MENU_OPTION_MODIFY, collectionName, MENU_OPTION_GOBACK);
-    while ((option = GET_KEY()) != MENU_OPTION_CREATE &&
-           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW && option != MENU_OPTION_GOBACK)
-        ;
+           collectionName, MENU_OPTION_MODIFY, collectionName, MENU_OPTION_DELETE, collectionName, MENU_OPTION_GOBACK);
+    while ((option = GET_KEY()) != MENU_OPTION_CREATE && option != MENU_OPTION_DELETE &&
+           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW && option != MENU_OPTION_GOBACK) ; // get input until input is valid
+    
+    puts("\n");
+    
     return option;
 }
 
@@ -129,6 +132,7 @@ Long selectCollectionInterface(List *collection, MenuOption collectionType)
         else
             printf("\n%10llu\t%s ", i + 1, title);
     }
+    printf("\n%10llu\tGo Back ", collection->length + 1);
     scanf("%llu", &choice);
     return choice;
 }
@@ -143,9 +147,21 @@ Task *createTaskInterface(TaskList *containerTaskList) {
     Priority priority;
     do {
         char c = GET_CHAR();
-        c = c >= 'a' && c <= 'z' ? c + ('A' - 'a') : c;
+        c = TO_UPPER(c); // convert lower case character to upper
         priority = c;
     } while(priority != HIGH && priority != MEDIUM && priority != LOW); // get priority until a valid value is received!
     getLine(deadline, "Date (as Y-M-D): ");
     return createTask(containerTaskList, title, priority, deadline);
+}
+
+short areYouSure(string message)
+{
+    printf("Are you sure on %s? [Y]ES, [N]O ", message);
+    char answer;
+    do {
+        answer = GET_CHAR();
+        answer = TO_UPPER(answer); // convert lower case character to upper
+    } while(answer != 'Y' && answer != 'N');
+    puts("\n");
+    return answer == 'Y';
 }

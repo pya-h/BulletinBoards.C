@@ -6,8 +6,8 @@
 
 void Board_reset(Board *board)
 {
-    board->title[0] = board->error[0] = '\0';    // a no location, becqause the board is not saved.
-    board->id = board->ownerId = 0; // identifier of failure
+    board->title[0] = board->error[0] = '\0'; // a no location, becqause the board is not saved.
+    board->id = board->ownerId = 0;           // identifier of failure
 }
 
 Board *newBoard()
@@ -28,8 +28,8 @@ Board *createBoard(Long ownerId, char title[])
     Board *board = newBoard();
     time_t now = time(NULL);
     board->ownerId = ownerId;
-  
-    if(strlen(title) > MAX_TITLE_LENGTH)
+
+    if (strlen(title) > MAX_TITLE_LENGTH)
     {
         char err[MAX_RESPONSE_LENGTH] = {'\0'};
         sprintf(err, "Title of a board can not exceed %d characters!", MAX_TITLE_LENGTH);
@@ -41,7 +41,7 @@ Board *createBoard(Long ownerId, char title[])
     {
         char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
         board->id = (Long)now;
-        // the boards created by a user will be stored in a file in Boards folder, named by the id of the board owner
+        // boards created by a user will be stored in a file in Boards folder, named by the id of the board owner
         SET_DATA_FILE(fileLocation, FOLDER_BOARDS, ownerId);
         if (!fileExists(fileLocation))
         {
@@ -66,7 +66,7 @@ Board *createBoard(Long ownerId, char title[])
     {
         Board_failure(board, "Cannot assign id to this new Board!");
     }
-    _fcloseall(); //Just to make sure
+    _fcloseall(); // Just to make sure
     return board;
 }
 
@@ -124,26 +124,45 @@ List *getBoards(Long ownerId)
     return boards;
 }
 
-short Boards_save(List *boards)
+short Boards_save(List *boards, Long ownerId)
 {
     // this is used when a board is modified or deleted
     // then the app should remove boards file data and replace its data with the updated data
     // that is stored in boards list
+    char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
+    FILE *boardFile;
+    Board *board;
+    SET_DATA_FILE(fileLocation, FOLDER_BOARDS, ownerId);
+    // creste the file and add the header row
+    boardFile = fopen(fileLocation, "w");
+    if (!boardFile)
+    {
+        List_failure(boards, "Cannot save Board data!");
+        return 0; // error happend
+    }
+
+    fprintf(boardFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
+    for (int i = 0; i < boards->length; i++)
+    {
+        board = (Board *)List_at(boards, i);
+        fprintf(boardFile, "%llu%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // append new board to file
+    }
+    fclose(boardFile);
+    return 1;
 }
 
 string Board_getError(Board *board)
 {
 
-    if(board && board->error[0])
+    if (board && board->error[0])
         // if error string is not empty, return it directly
         return board->error;
-    if(!board)
+    if (!board)
         return "An UnknownError detected. Trying to restart the app may help resolve or identify the issue ...";
-    
-    if(!board->id)
+
+    if (!board->id)
         return "An UnknownError detected and it appears to be related to boards database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
-
 }
 
 void Board_print(Board *board)
@@ -151,4 +170,9 @@ void Board_print(Board *board)
     printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
     printf("%10llu\t\t%10llu\t\t%s\n", board->id, board->ownerId, board->title);
+}
+
+short Board_delete(Board *board)
+{
+    
 }

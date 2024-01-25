@@ -12,11 +12,11 @@ ListItem *newListItem(void *data)
 List *newList()
 {
     List *list = (List *)calloc(1, sizeof(List));
-    resetList(list);
+    List_reset(list);
     return list;
 }
 
-void *resetList(List *list)
+void *List_reset(List *list)
 {
     list->first = list->last = NULL;
     list->length = 0;
@@ -120,7 +120,7 @@ short List_delete(List *list, Long index)
         if (list->length == 1)
         {
             // if the list has only one element:
-            resetList(list);
+            List_reset(list);
             ListItem_dump(trash);
             return 1;
         }
@@ -154,4 +154,10 @@ string List_getError(List *list)
     if (!list)
         return "An UnknownError detected and it appears to be related to database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
+}
+
+void List_failure(List *list, string msg)
+{
+    List_reset(list);
+    sprintf(list->error, "Unexpected Behaviour:\t%s\n", msg);
 }
