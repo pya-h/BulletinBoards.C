@@ -1,4 +1,5 @@
 #include "app/bulletin-boards.h"
+#include <string.h>
 
 // THINK: write a professional getch() ?
 // TODO: this one will count the number of options and gets key until the max length/count
@@ -19,22 +20,23 @@ int main()
                 switch (choice)
                 {
                 case MENU_OPTION_CREATE:
-                    { // because Board is defined inside we used {}
-                        Board *nextBoard = createBoardInterface(session.user->id);
-                        session.error = Board_getError(nextBoard);
-                        if (!session.error) // if board created successfully
-                        {
-                            List_add(session.boards, nextBoard);
-                            printf("Board successfully created.\n");
-                        }
-                        else
-                        {
-                            fprintf(stderr, session.error);
-                        }
+                { // because Board is defined inside we used {}
+                    Board *nextBoard = createBoardInterface(session.user->id);
+                    session.error = Board_getError(nextBoard);
+                    if (!session.error) // if board created successfully
+                    {
+                        List_add(session.boards, nextBoard);
+                        printf("Board successfully created.\n");
                     }
-                    break;
+                    else
+                    {
+                        fprintf(stderr, session.error);
+                    }
+                }
+                break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
+                case MENU_OPTION_DELETE:
                     session.error = List_getError(session.boards);
                     if (session.error)
                     {
@@ -42,8 +44,16 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
+
+                    if (!session.boards->length)
+                    {
+                        fprintf(stderr, "No boards created yet.");
+                        break;
+                    }
                     selectedItemIndex = selectCollectionInterface(session.boards, COLLECTION_TYPE_BOARD) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
+                    if(selectedItemIndex == session.boards->length)
+                        break;
                     Board *selectedBoard = (Board *)List_at(session.boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
                     if (!selectedBoard)
@@ -53,17 +63,56 @@ int main()
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
-                    session.currentBoard = selectedBoard;
-                    session.lists = getTaskLists(session.currentBoard);
-                    session.error = List_getError(session.lists);
+                    CLEAR_SCREEN(); // clear screen for next section
+                    switch (choice)
+                    {
+                    case MENU_OPTION_VIEW:
+                        session.currentBoard = selectedBoard;
+                        session.lists = getTaskLists(session.currentBoard);
+                        session.error = List_getError(session.lists);
+                        if (!session.error)
+                        {             // if everything was successfull
+                            continue; // continue the loop, so the board will be printed imedately in next if
+                        }
+                        break; // if there was error, break out of inner switch to print out error
+                    case MENU_OPTION_MODIFY:
+                        {
+                            char oldTitle[MAX_TITLE_LENGTH] = {'\0'};
+                            printf("Modify Board Name:\n");
+                            printf("\n\tCurrent Title: %s\n", selectedBoard->title);
+                            if (!areYouSure("Modifying this board title"))
+                                break;
+                            PRINT_DASH_ROW();
+                            strncpy(oldTitle, selectedBoard->title, MAX_TITLE_LENGTH); // save old title in case something goes wrong!
+                            getLine(selectedBoard->title, "\tTitle:\t");
+                            if (Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
+                            {
+                                printf("\nTitle of the board successfully changed.\n");
+                            }
+                            else
+                            {
+                                // error happened while saving
+                                session.error = List_getError(session.boards);
+                                strncpy(selectedBoard->title, oldTitle, MAX_TITLE_LENGTH); // reverse board title, because it hasnt been updated in database
+
+                            }
+                        }
+                        break;
+                    case MENU_OPTION_DELETE:
+                        printf("Board that you intend to delete:\n");
+                        Board_print(selectedBoard);
+                        PRINT_DASH_ROW();
+                        if(!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                            break;
+                        
+                        break;
+                    }
                     if (session.error)
                     {
                         fprintf(stderr, "Fatal Error: %s", session.error);
-                        break; // close the app.
                     }
-                    CLEAR_SCREEN();
-                    continue; // continue the loop, so the board will be printed imedately in next if
-                }             // this switch doesnt need any default case; because user is forced to select only one of the 3 options provided
+                    break; // close the app.
+                }
             }
             else if (!session.currentList)
             {
@@ -95,6 +144,11 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
+                    if (!session.lists->length)
+                    {
+                        fprintf(stderr, "No Lists have been added to this board yet.");
+                        break;
+                    }
                     selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_LIST) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     TaskList *selectedTaskList = (TaskList *)List_at(session.lists, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
@@ -109,7 +163,7 @@ int main()
                     session.currentList = selectedTaskList;
                     // TODO: Load TASKS here
                     // then check error
-                    
+
                     session.tasks = getTasks(session.currentList);
                     session.error = List_getError(session.tasks);
                     if (session.error)
@@ -128,7 +182,7 @@ int main()
                     continue; // immediately go back to boards menu
                 }
             }
-            else if(!session.currentTask)
+            else if (!session.currentTask)
             {
                 TaskList_print(session.currentList);
                 choice = listsMenu(COLLECTION_TYPE_TASK);
@@ -158,6 +212,11 @@ int main()
                         fprintf(stderr, "Operation Failure!\t%s", session.error);
                         break;
                     }
+                    if (!session.tasks->length)
+                    {
+                        fprintf(stderr, "No Tasks have been added to this list yet.");
+                        break;
+                    }
                     selectedItemIndex = selectCollectionInterface(session.tasks, COLLECTION_TYPE_TASK) - 1; // menu items are started at 1
                     // now selectedItemIndex is the index of board
                     Task *selectedTask = (Task *)List_at(session.tasks, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
@@ -170,7 +229,7 @@ int main()
                         break; // break out of switch
                     }
                     session.currentTask = selectedTask;
-                    
+
                     CLEAR_SCREEN();
                     continue; // continue the loop, so the board will be printed imedately in next if
                     // because we want the user to see board data while he sees List menu
@@ -180,7 +239,9 @@ int main()
                     CLEAR_SCREEN();
                     continue; // immediately go back to boards menu
                 }
-            } else {
+            }
+            else
+            {
                 Task_print(session.currentTask);
                 session.currentTask = NULL;
             }

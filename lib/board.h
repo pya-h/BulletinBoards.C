@@ -17,7 +17,8 @@
     Board *newBoard();
     Board *createBoard(Long, char []);
     List *getBoards(Long);
-    short Boards_save(List *);
+    short Boards_save(List *, Long);
+    short Board_delete(Board *);
     string Board_getError(Board *);
     void Board_reset(Board *);
     void Board_failure(Board *, string);

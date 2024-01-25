@@ -29,7 +29,8 @@
         MENU_OPTION_VIEW = (char)1, // making menu option to be of type char, so that it doesnt occupy unnecessary space (as int)
         MENU_OPTION_CREATE = (char)2,
         MENU_OPTION_MODIFY = (char)3,
-        MENU_OPTION_GOBACK = (char)4
+        MENU_OPTION_DELETE = (char)4,
+        MENU_OPTION_GOBACK = (char)5
     } MenuOption;
 
     typedef struct Session {
@@ -58,4 +59,5 @@
     Task *createTaskInterface(TaskList *);
     // used for selecting board/list
     Long selectCollectionInterface(List *collection, MenuOption collectionType);
+    short areYouSure(string message);
 #endif //BULLETIN_BOARDS

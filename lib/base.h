@@ -33,9 +33,10 @@
     #define CLEAR_SCREEN() system("cls")
     #define GET_KEY() _getch() - '0' // _getch() returns an ASCII code,
     #define GET_CHAR() _getch(); //return the actual char
+    #define TO_UPPER(c) c >= 'a' && c <= 'z' ? c + ('A' - 'a') : c // convert lower case character (if it is)  to upper case
     // substracting it by '0'(=48) will convert it to normal integer.
     #define PRESS_KEY_TO_CONTINUE() system("pause")
-    #define PRINT_DASH_ROW() printf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
+    #define PRINT_DASH_ROW() printf("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
 
     #define ABS(x) x >= 0 ? x : x * -1
     #define DIFF(x, y) ABS(x - y)

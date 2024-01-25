@@ -27,7 +27,7 @@
         ListItem *lastAccessedItem;
     } List;
 
-    void *resetList(List *list);
+    void *List_reset(List *list);
     List *newList();
     ListItem *newListItem(void *data);
     void ListItem_dump(ListItem *);
@@ -36,5 +36,6 @@
     short List_delete(List *list, Long index);
     string List_getError(List *list);
     // void **List_toArray(List *list, Long index);
+    void List_failure(List *, string);
     
 #endif //LINK_LIST_H
