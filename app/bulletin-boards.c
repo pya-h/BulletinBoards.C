@@ -40,6 +40,7 @@ User *authenticationAttempt(short attemptType)
     // attemptType: 0 login
     // attemptType: 1 registeration
     printf("\n\n%s:", attemptType == MENU_OPTION_REGISTERATION_ATTEMPT ? "Registeration" : "Login");
+    PRINT_DASH_ROW();
     char username[MAX_ANY_STRING_LENGTH] = {'\0'}, password[MAX_ANY_STRING_LENGTH] = {'\0'};
     getLine(username, "\tUsername:\t");
     getLine(password, "\tPassword:\t");

@@ -123,8 +123,32 @@ List *getTaskLists(Board *containerBoard)
     return taskLists;
 }
 
-short TaskLists_save(List *taskLists)
+short TaskLists_save(List *taskLists, Long boardId)
 {
+    // this is used when a task list is modified or deleted
+    // then the app should remove tasklist file data and replace its data with the updated data
+    // that is stored in taskLists list
+    char fileLocation[MAX_FILENAME_LENGTH] = {'\0'};
+    FILE *taskListFile; // file related to the selected list of a selected board
+    TaskList *taskList;
+    SET_DATA_FILE(fileLocation, FOLDER_LISTS, boardId);
+    // create the file and add the header row
+    taskListFile = fopen(fileLocation, "w");
+    if (!taskListFile)
+    {
+        List_failure(taskLists, "Cannot save TaskLists data!");
+        return 0; // error happend
+    }
+    fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER);
+    
+    for (int i = 0; i < taskLists->length; i++)
+    {
+        taskList = (TaskList *)List_at(taskLists, i);
+        fprintf(taskListFile, "%llu%s\"%s\"%s%llu\n", taskList->id, COLUMN_DELIMITER, taskList->title,
+                    COLUMN_DELIMITER, taskList->board->ownerId);
+    }
+    fclose(taskListFile);
+    return 1;
 }
 
 string TaskList_getError(TaskList *taskList)
