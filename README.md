@@ -1,39 +1,21 @@
-# Bulletin Boards by My Lovely C :)
+<h1>Bulletin Boards Project</h1>
+<h3>Language: Old School C :)</h3>
 
-<h3>Features until now:</h3>
+<p>This is a College Computer Major Project. I have coded this single project for 3 different person.</p>
+<p>The actual purpose was that variations must be in a way, that no one find out they are all done by one person [me!].</p>
+<p> So they are coded in 3 different separate variations, with 3 different styles, with 3 different approaches and algorythms,
+with 3 different naming conventions, 3 different header structures, and etc.<p>
+
+<h2>Variations</h2>
+<p>There are 3 different variations, that i explained the idea behind each one:</p>
 <ol>
-    <li>User Registeration</li>
-    <li>Uer Login </li>
-    <li>Saving passwords encoded.</li>
-    <li>Create new board/List/Task</li>
-    <li>View all Boards/Lists/Tasks</li>
-    <li>Delete board/task/list <sub>(In Progress)</sub></li>
-    <li>Cool & Easy Menus</li>
-    <li>Modify Board/List Title & Change Task's Title/Priority/Deadline</li>
-    <li>Implemented a Cool LinkList model;</li>
-    <li>Special error handling in C</li>
-    <li>
+    <li>1st and Main Variation:
+      <p>This one is my own style; This is me being me while doing a project!</p>
+    </li>
+    <li>2nd Variation: A MidLevel C Programmer:
+      <p>This one is me imitating a medium level programmer! So i had considered some intentional programming weaknesses while coding.</p>
+    </li>
+    <li>3rd And Last one: Me imitating an ameteur programmer!
+      <p>I have coded this one in a way that indicates a amateur programming method as a newbie programmer :)</p>
+    </li>
 </ol>
-<hr />
-<h2>Todos:</h2>
-<ol>
-    <li>Complete delete board section</li>
-    <li>Move tasks from a List to another one</li>
-    <li>Add Reminders</li>
-    <li>Implement Sorting</li>
-    <li>Add logout option</li>
-    <li>Allow users to auto login til 24 ours of last use</li>
-    <li><s>Use .csv excel files instead of normal txt files.</s></li>
-    <li><s>Implement Lists sections</s></li>
-    <li><s>Implement Tasks</s></li>
-</ol>
-<hr />
-<h1>BUGS</h1>
-<ol>
-    <li><u> After showing a error message 1 or two times, app crashes!</u></li>
-</ol>
-<hr />
-<ul>
-    <li>Run w.bat for windows or run .\w in windows terminal </li>
-    <li>Run bash x in linux terminal. (It has some work to do though)</li>
-</ul>
