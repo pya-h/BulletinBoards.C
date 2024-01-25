@@ -1,39 +1,21 @@
-# Bulletin Boards by My Lovely C :)
+<h1>Bulletin Boards Project</h1>
+<h3>Language: Old School C :)</h3>
 
-<h3>Features until now:</h3>
+<p>This is a College Computer Major Project. I have implemented the same project specification in 3 different variation.</p>
+<p>The variations were deliberately written to be as different from each other as possible.</p>
+<p>They are coded in 3 separate variations, with 3 different styles, with 3 different approaches and algorythms,
+with 3 different naming conventions, 3 different header structures, and etc.<p>
+
+<h2>Variations</h2>
+<p>There are 3 different variations, that i explained the idea behind each one:</p>
 <ol>
-    <li>User Registeration</li>
-    <li>Uer Login </li>
-    <li>Saving passwords encoded.</li>
-    <li>Create new board/List/Task</li>
-    <li>View all Boards/Lists/Tasks</li>
-    <li>Delete board/task/list <sub>(In Progress)</sub></li>
-    <li>Cool & Easy Menus</li>
-    <li>Modify Board/List Title & Change Task's Title/Priority/Deadline</li>
-    <li>Implemented a Cool LinkList model;</li>
-    <li>Special error handling in C</li>
-    <li>
+    <li>1st and Main Variation:
+      <p>This one is my own style; This is me being me while doing a project!</p>
+    </li>
+    <li>2nd Variation: Intermediate Style:
+      <p>Written the way an intermediate C programmer typically structures a project: fewer modules and more direct, less abstracted code.</p>
+    </li>
+    <li>3rd Variation: Beginner Style:
+      <p>Written the way a beginner typically approaches C: one data module, arrays grown with realloc, and a single data file.</p>
+    </li>
 </ol>
-<hr />
-<h2>Todos:</h2>
-<ol>
-    <li>Complete delete board section</li>
-    <li>Move tasks from a List to another one</li>
-    <li>Add Reminders</li>
-    <li>Implement Sorting</li>
-    <li>Add logout option</li>
-    <li>Allow users to auto login til 24 ours of last use</li>
-    <li><s>Use .csv excel files instead of normal txt files.</s></li>
-    <li><s>Implement Lists sections</s></li>
-    <li><s>Implement Tasks</s></li>
-</ol>
-<hr />
-<h1>BUGS</h1>
-<ol>
-    <li><u> After showing a error message 1 or two times, app crashes!</u></li>
-</ol>
-<hr />
-<ul>
-    <li>Run w.bat for windows or run .\w in windows terminal </li>
-    <li>Run bash x in linux terminal. (It has some work to do though)</li>
-</ul>
