@@ -1,68 +1,88 @@
-#include "my_models.h"
-#include "stdio.h"
-#include <windows.h>
-#include <windows.h>
+#include "manager.h" // & models.h && stdio.h & string.h
+#include "windows.h"
+#include "sys/stat.h"
 
 void close_menu() {
-    HANDLE hStdOut;
+    HANDLE handle;
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     DWORD count;
-    DWORD cellCount;
-    COORD homeCoords = {0, 0};
+    DWORD cells;
+    COORD coord = {0, 0};
 
-    hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hStdOut == INVALID_HANDLE_VALUE)
+    handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (handle == INVALID_HANDLE_VALUE)
         return;
 
     /* Get the number of cells in the current buffer */
-    if (!GetConsoleScreenBufferInfo(hStdOut, &csbi))
+    if (!GetConsoleScreenBufferInfo(handle, &csbi))
         return;
-    cellCount = csbi.dwSize.X * csbi.dwSize.Y;
+    cells = csbi.dwSize.X * csbi.dwSize.Y;
 
     /* Fill the entire buffer with spaces */
     if (!FillConsoleOutputCharacter(
-            hStdOut,
+            handle,
             (TCHAR)' ',
-            cellCount,
-            homeCoords,
+            cells,
+            coord,
             &count))
         return;
 
     /* Fill the entire buffer with the current colors and attributes */
     if (!FillConsoleOutputAttribute(
-            hStdOut,
+            handle,
             csbi.wAttributes,
-            cellCount,
-            homeCoords,
+            cells,
+            coord,
             &count))
         return;
 
     /* Move the cursor home */
-    SetConsoleCursorPosition(hStdOut, homeCoords);
+    SetConsoleCursorPosition(handle, coord);
 }
 
 void show_help() {
-    puts("\nProgram command-lines (Commands are not Case-Sensitive):\n");
-    puts("Show this guide: help\n");
-    puts("Login: lg {username} {password}\n");
-    puts("Register: rg {username} {password}\n");
-    puts("Show current Board/List/Task Menu: show"); // if just a board is selected, board menu will be shown
-                                                     // if a list is selected then list menu will be shown, and etc.
-    puts("Select Board: add board {board name}");
-    puts("Select Board: sel board {id}");
-
-    // after board sleected; otherwise shows an error
-    puts("Select Board: add list {list name}");
-    puts("Select List: sel list {id}");
-
-    puts("Add Task: add list {task name} {deadline} {priority}"); // only if a list is selected
-    puts("Select Task: sel task {id}");
+    printf("\nProgram inprintf (Upper or lower case in input commands is not important):\n");
+    printf("Show this guide: HELP\n");
+    printf("Show current data: SHOW"); /* If just a board is selected, that board lists options will be shown
+                                        If a list is selected then that list task options will be shown.
+                                        If nothing is selected then board options will be shown.*/
+    printf("Add new item: ADD"); // Add current state item => for example if a board is selected then add new list
+    printf("Select item: SEL [index]"); // select current state item
+    printf("Save changes: SAVE"); //save any change made
 }
 
 
-int main()
-{
-    int flag_is_command_ine = 1; // 1 => user can use command lines  0 => show menu; use must select menu
-    char input[500];
-
+int main() {
+    char command[10], param1[50], param2[50];
+    char *input_uppercase;
+    struct board *board = NULL;
+    struct list *list = NULL;
+    struct user *user = NULL;
+    printf("WELCOME :)\n");
+    while(1) { // program main loop
+        if(user == NULL) { // No input other than register and logout work here
+            printf("If you want to start using this program, you must login or register first:\n");
+            printf("Login: LOG [username] [password]\n");
+            printf("Register: REG [username] [password]\n");
+            while(user == NULL) { // get login input until no user found
+                printf("> "); 
+                scanf("%s %s %s", command, param1, param2);// Get input;
+                input_uppercase = strupr(command);
+                if(!strcmp(input_uppercase, "LOG")) { // if command is LOG
+                    
+                } else if(!strcmp(input_uppercase, "REG")) { // if command is REG
+                    int user_folder = get_user_folder(param1);
+                    if(user_folder == EOF) {
+                        printf("New user\n");
+                    } else {
+                        printf("Error: username exists! try again ... ");
+                    }
+                }
+            }
+            close_menu();
+        } else {
+            //printf("");
+        }
+        getchar();
+    }
 }
