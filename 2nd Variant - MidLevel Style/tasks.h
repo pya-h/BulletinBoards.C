@@ -1,14 +1,12 @@
 #ifndef tasks_h
 #define tasks_h
 
-struct date
-{
+struct date {
     int year, month, day;
 };
 
 // store task data
-struct task
-{
+struct task {
     char name[500];
     int priority; // high priority <=> high number
     struct date date;
