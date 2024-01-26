@@ -155,7 +155,7 @@ Task *createTaskInterface(TaskList *containerTaskList) {
 
 short areYouSure(string message)
 {
-    printf("Are you sure on %s? [Y]ES, [N]O ", message);
+    printf("Are you sure on %s? (Y) YES, (N) NO ", message);
     char answer;
     do {
         answer = GET_CHAR();
