@@ -30,7 +30,8 @@
     // UI MACROS:
     // some macros are just defined, so if they fail in some compiler,
     // we can simply be changed to something else
-    #define CLEAR_SCREEN() system("cls")
+    #define CLEAR_SCREEN() system("@cls||clear"); // use 'cls' command, which will clear windows console
+    // if the os is not windows, the command excecution will reach to 'clear' which will clear linux & mac terminal
     #define GET_MENU_OPTION() _getch() - '0' // _getch() returns an ASCII code,
     #define GET_CHAR() _getch(); //return the actual char
     #define TO_UPPER(c) c >= 'a' && c <= 'z' ? c + ('A' - 'a') : c // convert lower case character (if it is)  to upper case

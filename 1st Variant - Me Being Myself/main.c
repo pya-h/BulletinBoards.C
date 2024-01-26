@@ -138,6 +138,7 @@ int main()
                     {
                         fprintf(stderr, session.error);
                     }
+                    session.currentBoard = NULL;
                 }
                 break;
                 case MENU_OPTION_VIEW:
