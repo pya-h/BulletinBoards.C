@@ -1,5 +1,9 @@
-#ifndef my_models
-#define my_models
+#ifndef models
+#define models
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
+
 struct date {
     int year, month, day;
 };
@@ -14,7 +18,7 @@ struct task {
 // store list data and tasks added to that list
 struct list {
     char name[500];
-    struct task *tasks;
+    struct task *my_tasks;
     struct list *next;
     int tasks_file_start; // in file
 };
@@ -22,7 +26,7 @@ struct list {
 // store board data and lists of that board
 struct board {
     char name[500];
-    struct list *lists;
+    struct list *my_lists;
     struct board *next;
     int lists_file_start; // in file
 };
