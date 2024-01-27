@@ -14,4 +14,5 @@ int get_next_folder_number();
 int register_user(char username[], char password[]);
 FILE *open_file_for_read(char filename[]);
 struct user *login_user(int folder_number, char username[], char password[]);
+
 #endif

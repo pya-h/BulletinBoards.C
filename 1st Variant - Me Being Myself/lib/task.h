@@ -17,15 +17,16 @@
         HIGH = 'H'
     } Priority;
 
-    typedef struct Task {
+    typedef struct
+    {
         Long id;
-        char title[MAX_TASK_TITLE_LENGTH];
+
+        Long ownerId; // is it used? because .taskList->board->ownerId is the same
+        
+        char title[MAX_TASK_TITLE_LENGTH], error[MAX_RESPONSE_LENGTH];
         Priority priority;
         Date deadline;
-        Long ownerId;
         TaskList *taskList; // this one also contains Board
-        char error[MAX_RESPONSE_LENGTH];
-
     } Task;
 
     void Task_reset(Task *);

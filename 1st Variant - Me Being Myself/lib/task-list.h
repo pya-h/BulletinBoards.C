@@ -10,10 +10,9 @@
     {
         Long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
-        char title[MAX_TITLE_LENGTH];
+        char title[MAX_TITLE_LENGTH], 
+            error[MAX_RESPONSE_LENGTH];
         Board *board; // the board that contains the list
-
-        char error[MAX_RESPONSE_LENGTH];
     } TaskList;
 
     // prototypes:

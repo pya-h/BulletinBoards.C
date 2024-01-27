@@ -8,9 +8,9 @@
     {
         Long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
-        char title[MAX_TITLE_LENGTH];
+        char title[MAX_TITLE_LENGTH], 
+            error[MAX_RESPONSE_LENGTH];
         Long ownerId; // the id of the user tat has created this board
-        char error[MAX_RESPONSE_LENGTH];
     } Board;
 
     // prototypes:

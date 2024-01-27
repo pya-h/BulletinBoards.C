@@ -79,19 +79,18 @@ int register_user(char username[], char password[]) {
 struct user *login_user(int folder_number, char username[], char password[]) {
     char index_filename[30];
     FILE *f_user_index_reader;
-    struct user *user = NULL;
+    struct user *user = (struct user *) malloc(sizeof(struct user));
     sprintf(index_filename, "user-%d\\index.csv", folder_number);
-    printf("Index file: %s\n", index_filename);
     f_user_index_reader = open_file_for_read(index_filename);
 
     if(f_user_index_reader) {
-        struct user target_user;
-        printf("Index file: %s Opened\n", index_filename);
-        fscanf(f_user_index_reader, "%49[^,] %s\n", target_user.username, target_user.password);
-        printf("user in file: %s,%s\n", target_user.username, target_user.password);
+        fscanf(f_user_index_reader, "%49[^,],%s\n", user->username, user->password);
+        fscanf(f_user_index_reader, "%49[^,]\n", user->username);
         fclose(f_user_index_reader);
-        if(!strcmp(target_user.username, username) && !strcmp(target_user.password, password)) {
-            user = &target_user;
+        if(!strcmp(user->username, username) && !strcmp(user->password, password)) {
+            user->folder_number = folder_number;
+            // temp init
+            user->my_boards = NULL;
             return user;
         }
     }
