@@ -12,15 +12,13 @@
     {
         Long id; // will be set by the current time value
         // id will be used for ownership of other items (such as tasks)
-        char name[MAX_USERNAME_LENGTH];
-
-        // place where this user credentials are stored
-        char location[MAX_FILENAME_LENGTH];
-
+        char name[MAX_USERNAME_LENGTH],
+            // place where this user credentials are stored
+            location[MAX_FILENAME_LENGTH],
+            // error handler field
+            error[MAX_RESPONSE_LENGTH];
         unsigned short loggedIn; // if the user is logged in or logined,
         // it can be checked by this flag
-
-        char error[MAX_RESPONSE_LENGTH];
     } User; // we use typedef to make shortcuts, so we use for example 'User' instead of 'struct User'
 
     // prototypes:
