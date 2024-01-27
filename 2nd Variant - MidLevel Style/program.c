@@ -83,10 +83,10 @@ char *get_command() {
 
 int main() {
     char *command, param1[50], param2[30];
-    char *input_uppercase;
     struct board *board = NULL;
     struct list *list = NULL;
     struct user *user = NULL;
+    
     printf("WELCOME :)\n");
     while(1) { // Program main loop
         if(user == NULL) { // No input other than register and logout work here
@@ -94,13 +94,17 @@ int main() {
             show_help(1); // Show login/register commands help
             while(user == NULL) { // get login input until no user found
                 command = get_command();
-                if(!strcmp(input_uppercase, "LOG")) { // if command is LOG
+                if(!strcmp(command, "LOG")) { // if command is LOG
                     scanf("%s %s", param1, param2); // Get input;
                     user_folder = get_user_folder(param1);
-                    if(user_folder != EOF) {
-                            
-                    } printf("No such user found.\n");
-                } else if(!strcmp(input_uppercase, "REG")) { // if command is REG
+                    if(user_folder > 0) { // if user found
+                        user = login_user(user_folder, param1, param2);
+                        if(!user) {
+                            printf("username or password is invalid.");
+                        }
+                    } else printf("No such user found.\n");
+
+                } else if(!strcmp(command, "REG")) { // if command is REG
                     scanf("%s %s", param1, param2); // Get input;
                     user_folder = get_user_folder(param1);
                     if(user_folder == EOF) {
@@ -111,7 +115,7 @@ int main() {
                     } else {
                         printf("Error: username exists! try again ... ");
                     }
-                } else if(!strcmp(input_uppercase, "SHOW"))
+                } else if(!strcmp(command, "HELP"))
                     show_help(1);
                 else printf("Command not found.\n");
             }
