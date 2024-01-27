@@ -44,16 +44,16 @@ int next_page(int page, struct board *board, struct list *list, struct task *tas
     page = page < 4 ? page + 1 : 1; // go to next page, if its at tasks page and next_page is called it returns to All boards page.
     switch(page) {// Printf current page name:
         case 1:
-            printf("* All Boards:\n\n");
+            printf("* All Boards\n\n");
             break;
         case 2:
             printf("Board: %s\n\n", board->name);
             break;
         case 3:
-            printf("Board: %s, List: %s:\n\n", board->name, list->name);
+            printf("Board: %s, List: %s\n\n", board->name, list->name);
             break;
         case 4:
-            printf("Board: %s, List: %s, Task: %s:\n\n", board->name, list->name, task->name);
+            printf("Board: %s, List: %s, Task: %s\n\n", board->name, list->name, task->name);
             break;
         default:
             printf("Invalid Page!\n");
@@ -67,28 +67,29 @@ void show_help(int page) {
         printf("If you want to start using this program, you must login or register first:\n");
         printf("Login: LOG [username] [password]\n");
         printf("Register: REG [username] [password]\n");
-    } else if(page == 3) {
-        printf("Task commands (Upper or lower case in input commands is not important):\n");
+    } else {
+        printf("This page commands (Upper or lower case in input commands is not important):\n");
         printf("Show this guide: HELP\n");
         printf("Show current task: SHOW\n"); /* If just a board is selected, that board lists options will be shown
                                             If a list is selected then that list task options will be shown.
                                             If nothing is selected then board options will be shown.*/
-        printf("Add new task: ADD [name] [priority] [deadline_year] [deadline_month] [deadline_day]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
         printf("Select item: SEL [index]\n"); // select current state item
-        printf("Select item: EDIT [new_name]\n"); // edit the name of current board or list
+        if(page == 3) {
+            printf("Add new task: ADD [task_name]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
+            printf("    Then set parameters: [priority] [deadline_year] [deadline_month] [deadline_day]\n");
+        } else if(page == 4) {
+            printf("Select task: EDIT -N {new_name}\n"); // edit the name of task
+            printf("Select task: EDIT -P {new_priority}\n"); // edit the name of task
+            printf("Select task: EDIT -D {new_year} {new_month} {new_day}\n"); // edit the name of task
+        } else {
+            printf("Add new board/list: ADD [name]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
+            printf("Edit board/list: EDIT {new_name}\n");
+        }
+        if(page > 1 && page <= 4)
+            printf("Remove item: REM\n");
         printf("Save changes: SAVE\n"); //save any change made
-    } else {
-        printf("\nProgram commands (Upper or lower case in input commands is not important):\n");
-        printf("Show this guide: HELP\n");
-        printf("Show current data: SHOW\n"); /* If just a board is selected, that board lists options will be shown
-                                            If a list is selected then that list task options will be shown.
-                                            If nothing is selected then board options will be shown.*/
-        printf("Add new item: ADD [name]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
-        printf("Select item: SEL [index]\n"); // select current state item
-        printf("Select item: EDIT -N {new_name}\n"); // edit the name of task
-        printf("Select item: EDIT -P {new_priority}\n"); // edit the name of task
-        printf("Select item: EDIT -D {new_priority}\n"); // edit the name of task
-        printf("Save changes: SAVE\n"); //save any change made
+        printf("Previous page: BACK\n"); //save any change made
+        
     }
 }
 
@@ -212,7 +213,7 @@ int main() {
             if(check_page(&page, board, list, task)) { // Check and correct page number until its ok then get input
                 command = get_command();
                 if(!strcmp(command, "HELP"))
-                    show_help(0);
+                    show_help(page);
                 else if(!strcmp(command, "ADD")) {
                     scanf("%499[^\n]", name);
                     if(page == 1) { // 1 = board page
@@ -235,22 +236,21 @@ int main() {
                             unsaved_changes = 1;
                         } else printf("Error: List can not add. Board load problem!\n");
 
-                    } else if(page == 3) { // 3 = tasks page
+                    } else if(page == 3 || page == 4) { // 3 = tasks page
                         int priority, year, month, day;
-                        int input_ok;
+                        int input_has_error;
+                        printf("Parameters: ");
                         scanf("%d %d %d %d", &priority, &year, &month, &day);
-                        input_ok = check_task_input(priority, year, month, day);
-                        if(input_ok) {
-                            list->my_tasks = init_tasks(name, priority, year, month, day);
-                            printf("Your first list added to the list.\n");
-                            unsaved_changes = 1;
-                        } else show_error(input_ok);
-                        if(list->my_tasks == NULL) {
-                        } else if(add_task(list->my_tasks, name, priority, year, month, day)) {
-                            printf("List added.\n");
-                            unsaved_changes = 1;
-                        } else printf("Error: List can not add. List load problem!\n");
-
+                        input_has_error = check_task_input(priority, year, month, day);
+                        if(!input_has_error) {
+                            if(list->my_tasks == NULL) {
+                                list->my_tasks = init_tasks(name, priority, year, month, day);
+                                printf("Your first task added to the list.\n");
+                            } else if(add_task(list->my_tasks, name, priority, year, month, day)) {
+                                printf("Task added.\n");
+                                unsaved_changes = 1;
+                            } else printf("Error: Task can not add. List load problem!\n");
+                        } else show_error(input_has_error);
                     }
                 } else if(!strcmp(command, "SEL")) {
                     scanf("%d", &number);
@@ -271,13 +271,123 @@ int main() {
                         else printf("Error: Task not found.\n");
                     }
                     
-                }  else if(!strcmp(command, "SHOW")) {
+                } else if(!strcmp(command, "EDIT")) {
+                    if(page == 2) {//select board
+                        scanf("%499[^\n]", name);
+                        if(board != NULL) {
+                            sprintf(board->name, "%s", name);
+                            unsaved_changes = 1;
+                            printf("Board name changed.\n");
+                        } else printf("Error: No board selected.\n");
+                    } else if(page == 3) {
+                        scanf("%499[^\n]", name);
+                        if(list != NULL) {
+                            sprintf(list->name, "%s", name);
+                            unsaved_changes = 1;
+                            printf("List name changed.\n");
+                        } else printf("Error: No list selected.\n");
+                    } else if(page == 4) {
+                        char edit_type[5];
+                        if(task != NULL) {
+                            scanf("%s", edit_type);
+                            if(edit_type[0] == '-' && !edit_type[2]) {
+                                char param = edit_type[1];
+                                if(param == 'N' || param == 'n') {
+                                    scanf("%499[^\n]", name);
+                                    sprintf(task->name, "%s", name);
+                                    printf("Task name changed.\n");
+                                    unsaved_changes = 1;
+                                } else if(param == 'P' || param == 'p') {
+                                    int priority, input_has_error;
+                                    scanf("%d", &priority);
+                                    input_has_error = check_task_input(priority, task->date.year, task->date.month, task->date.day); // A test date just sent. The purpose is just checking priority
+                                    // I used task->date because its validated before and its not invalid. so only ne pririty will be checked
+                                    if(!input_has_error) {
+                                        task->priority = priority;
+                                        printf("Task priority changed.\n");
+                                        unsaved_changes = 1;
+                                    } printf("Error: Priority is invalid. Enter a number between 0 to 2.\n");
+                                } else if(param == 'D' || param == 'd') {
+                                    int year, month, day, input_has_error;
+                                    scanf("%d %d %d", &year, &month, &day);
+                                    input_has_error = check_task_input(task->priority, 2024, 1, 1); // A task->date is always valid. The purpose is just checking date
+                                    task->date.year = year;
+                                    task->date.month = month;
+                                    task->date.day = day;
+                                    printf("Task deadline changed.\n");
+                                    unsaved_changes = 1;
+                                } else printf("Error: Task edit parameter is invalid. Valid paramaters: -N, -P, -D\n");
+
+                            } else printf("Error: Task edit parameter is invalid. Valid paramaters: -N, -P, -D\n");
+                        } else printf("Error: No task is selected.\n");
+                    }
+                    
+                } else if(!strcmp(command, "SHOW")) {
                     if(page == 1) //select board
                         show_boards(user->my_boards);
                     else if(page == 2)
                         show_lists(board->my_lists);
                     else if(page == 3)
-                        show_lists(list->my_tasks);
+                        show_tasks(list->my_tasks);
+                    else if(page == 4)
+                        show_single_task(task);
+                } else if(!strcmp(command, "BACK")) {
+                    if(page == 1) {
+                        printf("This is the first page.\n");
+                    } else if(page > 1 && page < 5) {
+                        task = NULL;
+                        if(page <= 3)
+                            list = NULL;
+                        if(page == 2)
+                            board = NULL;
+                        page--;
+                        next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                    } else {
+                        // invalid page;
+                        page = 1;
+                    }
+                } else if(!strcmp(command, "REM")) {
+                    char sure[5], answer;
+                    printf("Are you sure? Y=Yes Other=No :");
+                    if(page == 2)
+                        printf("\n  * All of it\'s lists and tasks will remove too. ");
+                     if(page == 3)
+                        printf("\n  * All of it\'s tasks will remove too. ");
+                    scanf("%s", sure);
+                    answer = sure[0];
+                    if(answer == 'y' || answer == 'Y') {
+                        if(page == 2) {
+                            int result = remove_board(user, board);
+                            if(result != 1) show_error(result);
+                            else {
+                                printf("Board deleted.\n");
+                                task = NULL;
+                                list = NULL;
+                                board = NULL;
+                                page--; // go to previous page
+                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                            }
+                        } else if(page == 3) {
+                            int result = remove_list(board, list);
+                            if(result != 1) show_error(result);
+                            else {
+                                printf("List deleted.\n");
+                                list = NULL;
+                                task = NULL;
+                                page--; // go to previous page
+                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                            }
+                        } else if(page == 4) {
+                            int result = remove_task(list, task);
+                            if(result != 1) show_error(result);
+                            else {
+                                printf("Task deleted.\n");
+                                task = NULL;
+                                page--; // go to previous page
+                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                            }
+                        }
+                    } else printf("Removing canceled.\n");
                 }
             }
         }   
