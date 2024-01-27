@@ -34,11 +34,8 @@ struct board {
 // username and password is required to login and register
 // other variables are extra
 struct user {
-    char *username,
-        *password,
-        *first_name,
-        *last_name,
-        *email;
+    char *username;
+    char *password;
     int age;
     struct board *my_boards;
     // user is connected to board data by this link list
