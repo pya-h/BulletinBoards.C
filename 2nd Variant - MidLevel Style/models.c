@@ -201,9 +201,9 @@ void show_tasks(struct task *my_tasks) {
     struct task* task = my_tasks;
     int count = 0;
     while(task != NULL) {
-        task = task->next;
         count++;
         show_single_task(task, count);
+        task = task->next;
     }
     printf("Total count: %d\n", count);
 }
