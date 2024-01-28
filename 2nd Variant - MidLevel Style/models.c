@@ -6,6 +6,7 @@ struct board *init_boards(char first_board_name[]) {
     sprintf(my_boards->name, "%s", first_board_name);
     my_boards->next = NULL;
     my_boards->my_lists = NULL;
+    my_boards->lists_count = 0;
     return my_boards;
 }
 
@@ -14,14 +15,17 @@ int add_board(struct board *my_boards, char name[]) {
     struct board* b = my_boards;
     struct board* new_board = (struct board*) calloc(1, sizeof(struct user));
     sprintf(new_board->name, "%s", name);
+    new_board->next = NULL;
+    new_board->my_lists = NULL; // New board has no lists.
+    new_board->lists_count = 0;
+    new_board->next = NULL;
     int board_number = 1;
     while(b->next != NULL) {
         b = b->next;
         board_number++;
     }
     b->next = new_board;
-    b->next->my_lists = NULL; // New board has no lists.
-    b->next->next = NULL;
+
     return board_number;
 }
 
@@ -77,6 +81,7 @@ struct list *init_lists(char first_list_name[]) {
     sprintf(my_lists->name, "%s", first_list_name);
     my_lists->next = NULL;
     my_lists->my_tasks = NULL; // New list has no tasks
+    my_lists->tasks_count = 0;
     return my_lists;
 }
 
@@ -85,14 +90,16 @@ int add_list(struct list *my_lists, char name[]) {
     struct list* lst = my_lists;
     struct list* new_list = (struct list*) calloc(1, sizeof(struct user));
     sprintf(new_list->name, "%s", name);
+    new_list->tasks_count = 0;
+    new_list->next = NULL;
+    new_list->my_tasks = NULL; // New list has no tasks
+
     int list_number = 1;
     while(lst->next != NULL) {
         lst = lst->next;
         list_number++;
     }
     lst->next = new_list;
-    lst->next->my_tasks = NULL; // New list has no tasks
-    lst->next->next = NULL;
     return list_number;
 }
 
@@ -153,30 +160,28 @@ int check_task_input(int priority, int year, int month, int day) {
     return 0;
 }
 
+struct task* get_new_task(char name[], int priority, int year, int month, int day) {
+    struct task* new_task = (struct task*) calloc(1, sizeof(struct user));
+    sprintf(new_task->name, "%s", name);
+    new_task->priority = priority;
+    new_task->date_year = year;
+    new_task->date_month = month;
+    new_task->date_day = day;
+
+    new_task->next = NULL;
+    return new_task;
+}
+
 struct task *init_tasks(char first_task_name[], int first_task_priority, int year, int month, int day) {
     // this is for init user->mytasks
-    struct task* my_tasks = (struct task *) calloc(1, sizeof(struct task));
-    sprintf(my_tasks->name, "%s", first_task_name);
-    my_tasks->priority = first_task_priority;
-    my_tasks->date = (struct date *) calloc(1, sizeof(struct date));
-    my_tasks->date->year = year;
-    my_tasks->date->month = month;
-    my_tasks->date->day = day;
-    my_tasks->next = NULL;
+    struct task* my_tasks = get_new_task(first_task_name, first_task_priority, year, month, day);
     return my_tasks;
 }
 
 int add_task(struct task *my_tasks, char name[], int priority, int year, int month, int day) {
     // Because if the my_tasks is empty, it needs to update its address
     struct task* task = my_tasks;
-    struct task* new_task = (struct task*) calloc(1, sizeof(struct user));
-    sprintf(new_task->name, "%s", name);
-    new_task->priority = priority;
-    new_task->date = (struct date *) calloc(1, sizeof(struct date));
-    new_task->date->year = year;
-    new_task->date->month = month;
-    new_task->date->day = day;
-    new_task->next = NULL;
+    struct task* new_task = get_new_task(name, priority, year, month, day);
     int task_number = 1;
     while(task->next != NULL) {
         task = task->next;
@@ -221,7 +226,7 @@ void show_single_task(struct task *task, int number) {
         priority = "Low";
     if(number > 0) // when show_tasks call this function, it provides an task number
         printf("%d: ", number);
-    printf("%s, %s, %d/%d/%d\n", task->name, priority, task->date->year, task->date->month, task->date->day);
+    printf("%s, %s, %d/%d/%d\n", task->name, priority, task->date_year, task->date_month, task->date_day);
 }
 
 int remove_task(struct list *list, struct task *task) {
@@ -269,4 +274,65 @@ int move_task(struct task *task, struct list *source_list, struct list *target_l
         target_list->my_tasks = task;
     }
     return 1;
+}
+
+int date_to_days(int year, int month, int day) {
+    int days = year * 365 + day;
+    
+    for(int m = 1; m < month; m++) {
+        if(m == 2)
+            days += 29;
+        else if(m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12)
+            days += 31;
+        else days += 30;
+    }
+
+    return days;
+}
+
+void sort_list(struct list *list, int sort_by) {
+    if(list != NULL)
+    {
+        struct task* task = list->my_tasks;
+        for(int i = 0; i < list->tasks_count && task != NULL; i++) {
+            struct task *next_task = task->next;
+            for(int j = i + 1; next_task != NULL &&  j < list->tasks_count && task != NULL; j++) {
+                int swap = 0;
+                if(sort_by == 0) {
+                    swap = next_task->priority > task->priority;
+                } else if(sort_by == 1) {
+                    if(next_task->date_year < task->date_year) {
+                        swap = 1;
+                    } else if(next_task->date_year == task->date_year) {
+                        if(next_task->date_month < task->date_month)
+                            swap = 1;
+                        else if(next_task->date_month == task->date_month && next_task->date_day < task->date_day)
+                            swap = 1;
+                    }
+                }
+                if(swap == 1) { //Swap to sort
+                    int t_year, t_month, t_day, t_priority;
+                    char t_name[500];
+                    sprintf(t_name, "%s", task->name);
+                    t_year = task->date_year;
+                    t_month = task->date_month;
+                    t_day = task->date_day;
+                    t_priority = task->priority;
+                    
+                    sprintf(task->name, "%s", next_task->name);
+                    task->date_year = next_task->date_year;
+                    task->date_month = next_task->date_month;
+                    task->date_day = next_task->date_day;
+                    task->priority = next_task->priority;
+
+                    sprintf(next_task->name, "%s", t_name);
+                    next_task->date_year = t_year;
+                    next_task->date_month = t_month;
+                    next_task->date_day = t_day;
+                    next_task->priority = t_priority;
+                }
+            }
+        }
+    }
+
 }

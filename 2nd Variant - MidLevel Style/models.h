@@ -11,17 +11,15 @@
 #define errno_task_data_invalid -9
 #define errno_task_prioirty_invalid -10
 
-struct date {
-    int year;
-    int month; 
-    int day;
-};
 // store task data
 struct task {
     char name[500];
     int priority; // high priority <=> high number
     struct task *next; // task link list
-    struct date *date;
+    int date_year;
+    int date_month;
+    int date_day;
+
 };
 // list struct and link list
 // store list data and tasks added to that list
@@ -29,12 +27,14 @@ struct list {
     char name[500];
     struct list *next;
     struct task *my_tasks;
+    int tasks_count;
 };
 // board struct and link list
 // store board data and lists of that board
 struct board {
     char name[500];
     struct list *my_lists;
+    int lists_count;
     struct board *next;
 };
 // store user data
@@ -46,6 +46,10 @@ struct user {
     int age;
     int folder_number;
     struct board *my_boards;
+    int boards_count;
+    int current_year;
+    int current_month;
+    int current_day;
     // user is connected to board data by this link list
     // then board is connected to lists by *lists link list
     // then *lists is connected to it's tasks by *tasks link list
@@ -70,4 +74,7 @@ void show_tasks(struct task *my_tasks);
 void show_single_task(struct task *task, int number);
 int remove_task(struct list *list, struct task *task);
 int move_task(struct task *task, struct list *source_task, struct list *target_list);
+struct task* get_new_task(char name[], int priority, int year, int month, int day);
+void sort_list(struct list *list, int sort_by);
+int date_to_days(int year, int month, int day);
 #endif
