@@ -44,7 +44,7 @@ int next_page(int page, struct board *board, struct list *list, struct task *tas
     page = page < 4 ? page + 1 : 1; // go to next page, if its at tasks page and next_page is called it returns to All boards page.
     if(has_unsaved_changes)
         printf("*Warning: You have unsaved changes.\n");
-        
+
     switch(page) {// Printf current page name:
         case 1:
             printf("* All Boards\n\n");
@@ -79,6 +79,7 @@ void show_help(int page) {
         printf("Select item: SEL [index]\n"); // select current state item
         if(page == 3) {
             printf("Add new task: ADD [task_name]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
+            printf("sort list by priority/deadline: SORT [-D/-P]\n"); // sort list
             printf("    Then set parameters: [priority] [deadline_year] [deadline_month] [deadline_day]\n");
         } else if(page == 4) {
             printf("Select task: EDIT -N {new_name}\n"); // edit the name of task
