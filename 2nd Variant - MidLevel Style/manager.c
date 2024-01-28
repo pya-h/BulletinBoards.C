@@ -53,21 +53,35 @@ int get_next_folder_number() {
     return users_count;
 }
 
+char *get_user_filename(int user_folder_number) {
+    char index_filename[30];
+    sprintf(index_filename, "user-%d\\index.csv", user_folder_number);
+    return index_filename;
+}
+
+FILE *get_user_file(char index_filename[], char username[], char password[]) {
+    FILE *f_user_index_writer = fopen(index_filename, "w");
+    if(f_user_index_writer == NULL)
+        return NULL;
+    fprintf(f_user_index_writer, "username,password\n");
+    fprintf(f_user_index_writer, "%s,%s\n", username, password);
+    return f_user_index_writer;
+}
+
 int register_user(char username[], char password[]) {
     int folder_number = get_next_folder_number();
-    char folder_name[20], index_filename[30];
+    char folder_name[20];
+
     FILE *f_user_list_writer;
     if(folder_number != errno_user_list_not_available) {
+        sprintf(folder_name, "user-%d", folder_number);
         f_user_list_writer = fopen("users.csv", "a");
         fprintf(f_user_list_writer, "%d,%s\n", folder_number, username); // Add user folder folder number to user list. because this file helps in finding user
         fclose(f_user_list_writer);
-        
-        sprintf(folder_name, "user-%d", folder_number);
-        sprintf(index_filename, "%s\\index.csv", folder_name);
+
         if(CreateDirectory(folder_name, NULL)) {// Create the user data folder, This file contains user fields, boards and lists and tasks;
-            FILE *f_user_index_writer = fopen(index_filename, "w");
-            fprintf(f_user_index_writer, "username,password\n");
-            fprintf(f_user_index_writer, "%s,%s\n", username, password);
+            char index_filename = get_user_filename(folder_number);
+            FILE *f_user_index_writer = get_user_file(index_filename, username, password);
             fclose(f_user_index_writer);
             return folder_number;
         } 
@@ -95,4 +109,52 @@ struct user *login_user(int folder_number, char username[], char password[]) {
         }
     }
     return NULL;
+}
+
+char *get_list_filename(int user_folder_number) {
+    char board_filename[30];
+    sprintf(board_filename, "user-%d\\list.csv", user_folder_number);
+    return board_filename;
+}
+
+int save(struct user *user) {
+    /* User contains its all data by pointers
+     this function will save all. */
+    char index_filename = get_user_filename(user->folder_number);
+    FILE *f_user_index_writer = get_user_file(index_filename, user->username, user->password);
+    struct board *board = user->my_boards;
+    int board_number = 1, list_number = 1, task_number = 1;
+    if(f_user_index_writer != NULL)
+        return errno_user_files_not_available;
+    fprintf(f_user_index_writer, "board_number,board_name\n"); // Index file containes board data too
+    while(board != NULL){
+        FILE *f_list_writer;
+        char *list_filename = get_list_filename(user->folder_number);
+        struct list *list = board->my_lists;
+        fprintf(f_user_index_writer, "%d,%s\n", board_number, board->name); // Index file containes board data too
+
+        f_list_writer = fopen(list_filename, "w"); //open list file for write all board lists
+        if(!f_list_writer) {
+            fclose(f_list_writer);
+            fclose(f_user_index_writer);
+            return errno_user_files_not_available;
+        }
+        fprintf(f_list_writer, "board_number,list_number,list_name\n");
+        list_number = 1;
+        
+        while(list != NULL) { // write lists
+            fprintf(f_user_index_writer, "%d,%d,%s\n", board_number, list_number, list->name); // Index file containes board data too
+            FILE *f_task_writer;
+            char *task_filename = get_task_filename(user->folder_number);
+
+            FILE *f_task_writer;
+
+            list_number++;
+            list = list->next;
+        }
+
+        board_number++;
+        board = board->next;
+    }
+    fclose(f_user_index_writer);
 }

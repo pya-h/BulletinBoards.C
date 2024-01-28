@@ -39,9 +39,9 @@ void show_boards(struct board *my_boards) {
     struct board* b = my_boards;
     int count = 0;
     while(b != NULL) {
-        printf("%s\n", b->name);
-        b = b->next;
         count++;
+        printf("%d: %s\n", count, b->name);
+        b = b->next;
     }
     printf("Total count: %d\n", count);
 }
@@ -52,19 +52,20 @@ int remove_board(struct user *user, struct board *board) {
     if(board == NULL)
         return errno_board_not_selected;
 
-    while(previous_board != NULL &&  previous_board != board && previous_board->next != board)
-        previous_board = previous_board->next;
-    if(previous_board == NULL)
-        return errno_item_not_found;
-    previous_board->next = board->next; // Remove board from Link list
+    if(board == user->my_boards) { // If its the first item, update my_lists pointer
+        user->my_boards = user->my_boards->next;
+    } else {
+        while(previous_board != NULL &&  previous_board != board && previous_board->next != board)
+            previous_board = previous_board->next;
+        if(previous_board == NULL)
+            return errno_item_not_found;
+        previous_board->next = board->next; // Remove board from Link list
+    }
     list = board->my_lists; // remove board lists too.
     while(list != NULL) {
         temp = list->next;
         remove_list(board, list);
         list = temp;
-    }
-    if(board == user->my_boards) { // If its the first item, update my_lists pointer
-        user->my_boards = user->my_boards->next;
     }
     free(board);
     return 1;
@@ -111,9 +112,9 @@ void show_lists(struct list *my_lists) {
     struct list* lst = my_lists;
     int count = 0;
     while(lst != NULL) {
-        printf("%s\n", lst->name);
-        lst = lst->next;
         count++;
+        printf("%d: %s\n", count, lst->name);
+        lst = lst->next;
     }
     printf("Total count: %d\n", count);
 }
@@ -123,21 +124,22 @@ int remove_list(struct board *board, struct list *list) {
     struct task *task, *temp;
     if(list == NULL)
         return errno_list_not_selected;
+    if(list == board->my_lists) {
+        board->my_lists = board->my_lists->next; // update my_lists pointer because the first item is being freed
+    } else {
+        while(previous_list != NULL && previous_list != list && previous_list->next != list)
+            previous_list = previous_list->next;
+        if(previous_list == NULL)
+            return errno_item_not_found;
+        previous_list->next = list->next; // Remove list from Link list
 
-    while(previous_list != NULL && previous_list != list && previous_list->next != list)
-        previous_list = previous_list->next;
-    if(previous_list == NULL)
-        return errno_item_not_found;
-    previous_list->next = list->next; // Remove list from Link list
+    }
     // Remove list tasks:
     task = list->my_tasks;
     while(task != NULL) {
         temp = task; // Removing task removes task->next pointer too!
         task = task->next;
         free(temp); // Remove its task one by one
-    }
-    if(list == board->my_lists) {
-        board->my_lists = board->my_lists->next; // update my_lists pointer because the first item is being freed
     }
     free(list);
     return 1;
@@ -199,14 +201,14 @@ void show_tasks(struct task *my_tasks) {
     struct task* task = my_tasks;
     int count = 0;
     while(task != NULL) {
-        show_single_task(task);
         task = task->next;
         count++;
+        show_single_task(task, count);
     }
     printf("Total count: %d\n", count);
 }
 
-void show_single_task(struct task *task) {
+void show_single_task(struct task *task, int number) {
     char *priority;
     if(task->priority == 2)
         priority = "High";
@@ -214,6 +216,8 @@ void show_single_task(struct task *task) {
         priority = "Medium";
     else
         priority = "Low";
+    if(number > 0) // when show_tasks call this function, it provides an task number
+        printf("%d: ", number);
     printf("%s, %s, %d/%d/%d\n", task->name, priority, task->date.year, task->date.month, task->date.day);
 }
 
@@ -232,5 +236,34 @@ int remove_task(struct list *list, struct task *task) {
         return errno_item_not_found;
     previous_task->next = task->next; // Remove task from Link task
     free(task);
+    return 1;
+}
+
+int move_task(struct task *task, struct list *source_list, struct list *target_list) {
+    struct task *previous_task = source_list->my_tasks;
+    struct task *tl;
+    if(task == NULL)
+        return errno_task_not_selected;
+    if(source_list->my_tasks == task)
+        source_list->my_tasks = source_list->my_tasks->next;
+    else {
+        while(previous_task != NULL && source_list->my_tasks != task &&  previous_task->next != task)
+            previous_task = previous_task->next;
+        if(previous_task == NULL)
+            return errno_item_not_found;
+            
+        previous_task->next = task->next; // Remove task from Link task
+    }
+    // Add task to target_list
+    tl = target_list->my_tasks;
+    task->next = NULL;
+    if(tl != NULL) {
+        while(tl->next != NULL) {
+            tl = tl->next;
+        }
+        tl->next = task; // target list tasks linked to task
+    } else {
+        target_list->my_tasks = task;
+    }
     return 1;
 }

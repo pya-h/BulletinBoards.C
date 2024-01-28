@@ -81,6 +81,7 @@ void show_help(int page) {
             printf("Select task: EDIT -N {new_name}\n"); // edit the name of task
             printf("Select task: EDIT -P {new_priority}\n"); // edit the name of task
             printf("Select task: EDIT -D {new_year} {new_month} {new_day}\n"); // edit the name of task
+            printf("Move to other list: MOVE\n");
         } else {
             printf("Add new board/list: ADD [name]\n"); // Add current state item => for example if a board is selected then add new list with the .name as [name]
             printf("Edit board/list: EDIT {new_name}\n");
@@ -107,6 +108,15 @@ void show_error(int error_code) {
             break;
         case errno_task_data_invalid:
             printf("Enter a valid date as [year] [month] [day]\n");
+            break;
+        case errno_board_not_selected:
+            printf("No board selected.\n");
+            break;
+        case errno_list_not_selected:
+            printf("No list selected.\n");
+            break;
+        case errno_task_not_selected:
+            printf("No task selected.\n");
             break;
         default:
             printf("Program can not determine what caused error.\n");
@@ -261,7 +271,7 @@ int main() {
                         else printf("Error: Board not found.\n");
                     } else if(page == 2) {
                         list = get_list(board->my_lists, number);
-                        if(board != NULL)
+                        if(list != NULL)
                             page = next_page(page, board, list, task);
                         else printf("Error: List not found.\n");
                     } else if(page == 3) {
@@ -330,7 +340,7 @@ int main() {
                     else if(page == 3)
                         show_tasks(list->my_tasks);
                     else if(page == 4)
-                        show_single_task(task);
+                        show_single_task(task, 0); // 0 = show no number
                 } else if(!strcmp(command, "BACK")) {
                     if(page == 1) {
                         printf("This is the first page.\n");
@@ -365,6 +375,7 @@ int main() {
                                 list = NULL;
                                 board = NULL;
                                 page--; // go to previous page
+                                unsaved_changes = 1;
                                 next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
                             }
                         } else if(page == 3) {
@@ -375,6 +386,8 @@ int main() {
                                 list = NULL;
                                 task = NULL;
                                 page--; // go to previous page
+                                unsaved_changes = 1;
+
                                 next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
                             }
                         } else if(page == 4) {
@@ -384,11 +397,27 @@ int main() {
                                 printf("Task deleted.\n");
                                 task = NULL;
                                 page--; // go to previous page
+                                unsaved_changes = 1;
                                 next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
                             }
                         }
                     } else printf("Removing canceled.\n");
-                }
+                } else if(page == 4 && task !=NULL && !strcmp(command, "MOVE")) {
+                    struct list *target_list;
+                    show_lists(board->my_lists);
+                    printf("Select the target list: ");
+                    scanf("%d", &number);
+                    target_list = get_list(board->my_lists, number);
+                    if(list != NULL){
+                        int result = move_task(task, list, target_list);
+                        if(result != 1) show_error(result);
+                        else {
+                            printf("Task moved to selected list. You are now in the target list.\n");
+                            unsaved_changes = 1;
+                            list = target_list;
+                        }
+                    } else printf("Error: List not found.\n");
+                } else printf("Error: No such command.\n");
             }
         }   
     }
