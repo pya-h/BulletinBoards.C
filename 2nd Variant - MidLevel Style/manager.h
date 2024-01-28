@@ -8,11 +8,15 @@
 #include "windows.h"
 #define errno_user_list_not_available -1
 #define errno_folder_creation_failed -2
+#define errno_user_files_not_available -3
 
+char *get_user_filename(int user_folder_number);
+FILE *get_user_file(char index_filename[], char username[], char password[]) ;
 int get_user_folder(char username[]);
 int get_next_folder_number();
 int register_user(char username[], char password[]);
 FILE *open_file_for_read(char filename[]);
+char *get_list_filename(int user_folder_number);
 struct user *login_user(int folder_number, char username[], char password[]);
-
+int save(struct user *user);
 #endif

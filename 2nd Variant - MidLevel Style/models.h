@@ -65,7 +65,7 @@ struct task *init_tasks(char first_task_name[], int first_task_priority, int yea
 int add_task(struct task *my_tasks, char name[], int priority, int year, int month, int day);
 struct task *get_task(struct task *my_tasks, int task_number);
 void show_tasks(struct task *my_tasks);
-void show_single_task(struct task *task);
+void show_single_task(struct task *task, int number);
 int remove_task(struct list *list, struct task *task);
-
+int move_task(struct task *task, struct list *source_task, struct list *target_list);
 #endif
