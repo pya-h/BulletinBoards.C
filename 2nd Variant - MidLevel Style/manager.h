@@ -18,4 +18,7 @@ FILE *open_file_for_read(char filename[]);
 char *get_filename(int user_folder_number, char *file_type);
 struct user *login_user(int folder_number, char username[], char password[]);
 int save(struct user *user);
+int load(struct user *user);
+void show_reminder(struct user *user);
+
 #endif

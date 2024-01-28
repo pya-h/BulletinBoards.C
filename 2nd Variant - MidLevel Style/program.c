@@ -3,7 +3,7 @@
 #include "sys/stat.h"
 #include "stdio.h"
 
-int next_page(int page, struct board *board, struct list *list, struct task *task) {
+int next_page(int page, struct board *board, struct list *list, struct task *task, int has_unsaved_changes) {
     // First clean the page
     HANDLE handle;
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -42,6 +42,9 @@ int next_page(int page, struct board *board, struct list *list, struct task *tas
     SetConsoleCursorPosition(handle, coord);
 
     page = page < 4 ? page + 1 : 1; // go to next page, if its at tasks page and next_page is called it returns to All boards page.
+    if(has_unsaved_changes)
+        printf("*Warning: You have unsaved changes.\n");
+        
     switch(page) {// Printf current page name:
         case 1:
             printf("* All Boards\n\n");
@@ -199,6 +202,21 @@ int main() {
                         user = login_user(user_folder, username, password);
                         if(!user) {
                             printf("username or password is invalid.\n");
+                        } else {
+                            int result;
+                            printf("Now enter current date [Year Month Day]: ");
+                            scanf("%d %d %d", &user->current_year, &user->current_month, &user->current_day);
+                            if(!check_task_input(0, user->current_year, user->current_month, user->current_day)) {
+                                page = next_page(page, board, list, task, 0);
+                                result = load(user);
+                                if(result == 1) { 
+                                    printf("Loading completed.\n");
+                                    show_reminder(user);
+                                }
+                            } else {
+                                printf("ERROR: Invalid date.\n");
+                                user = NULL;
+                            }
                         }
                     } else printf("No such user found.\n");
 
@@ -217,8 +235,7 @@ int main() {
                     show_help(page);
                 else printf("Command not found.\n");
             }
-            save(user);
-            page = next_page(page, board, list, task);
+            
         } else {
             char name[500]; 
             int number;
@@ -234,9 +251,11 @@ int main() {
                             user->my_boards = init_boards(name);
                             printf("Your First board added. Congragulations!\n");
                             unsaved_changes = 1;
+                            user->boards_count = 1;
                         } else if(add_board(user->my_boards, name)) {
                             printf("Board added.\n");
                             unsaved_changes = 1;
+                            user->boards_count++;
                         } else printf("Error: Board can not add. Porgram load problem!\n");
 
                     } else if(page == 2) { // 2 == lists page
@@ -244,13 +263,16 @@ int main() {
                             board->my_lists = init_lists(name);
                             printf("Your first list added to the board.\n");
                             unsaved_changes = 1;
+                            board->lists_count = 1;
                         } else if(add_list(board->my_lists, name)) {
                             printf("List added.\n");
                             unsaved_changes = 1;
+                            board->lists_count++;
                         } else printf("Error: List can not add. Board load problem!\n");
 
                     } else if(page == 3 || page == 4) { // 3 = tasks page
-                        int priority, year, month, day;
+                        int priority;
+                        int year = 0, month = 0, day = 0;
                         int input_has_error;
                         printf("Parameters: ");
                         scanf("%d %d %d %d", &priority, &year, &month, &day);
@@ -259,8 +281,11 @@ int main() {
                             if(list->my_tasks == NULL) {
                                 list->my_tasks = init_tasks(name, priority, year, month, day);
                                 printf("Your first task added to the list.\n");
+                                unsaved_changes =1;
+                                list->tasks_count = 1;
                             } else if(add_task(list->my_tasks, name, priority, year, month, day)) {
                                 printf("Task added.\n");
+                                list->tasks_count++;
                                 unsaved_changes = 1;
                             } else printf("Error: Task can not add. List load problem!\n");
                         } else show_error(input_has_error);
@@ -270,17 +295,17 @@ int main() {
                     if(page == 1) {//select board
                         board = get_board(user->my_boards, number);
                         if(board != NULL)
-                            page = next_page(page, board, list, task);
+                            page = next_page(page, board, list, task, unsaved_changes);
                         else printf("Error: Board not found.\n");
                     } else if(page == 2) {
                         list = get_list(board->my_lists, number);
                         if(list != NULL)
-                            page = next_page(page, board, list, task);
+                            page = next_page(page, board, list, task, unsaved_changes);
                         else printf("Error: List not found.\n");
                     } else if(page == 3) {
                         task = get_task(list->my_tasks, number);
                         if(task != NULL)
-                            page = next_page(page, board, list, task);
+                            page = next_page(page, board, list, task, unsaved_changes);
                         else printf("Error: Task not found.\n");
                     }
                     
@@ -313,7 +338,7 @@ int main() {
                                 } else if(param == 'P' || param == 'p') {
                                     int priority, input_has_error;
                                     scanf("%d", &priority);
-                                    input_has_error = check_task_input(priority, task->date->year, task->date->month, task->date->day); // A test date just sent. The purpose is just checking priority
+                                    input_has_error = check_task_input(priority, task->date_year, task->date_month, task->date_day); // A test date just sent. The purpose is just checking priority
                                     // I used task->date because its validated before and its not invalid. so only ne pririty will be checked
                                     if(!input_has_error) {
                                         task->priority = priority;
@@ -321,14 +346,17 @@ int main() {
                                         unsaved_changes = 1;
                                     } printf("Error: Priority is invalid. Enter a number between 0 to 2.\n");
                                 } else if(param == 'D' || param == 'd') {
-                                    int year, month, day, input_has_error;
+                                    int year = 0, month = 0, day = 0;
+                                    int input_has_error;
                                     scanf("%d %d %d", &year, &month, &day);
-                                    input_has_error = check_task_input(task->priority, 2024, 1, 1); // A task->date is always valid. The purpose is just checking date
-                                    task->date->year = year;
-                                    task->date->month = month;
-                                    task->date->day = day;
-                                    printf("Task deadline changed.\n");
-                                    unsaved_changes = 1;
+                                    input_has_error = check_task_input(task->priority, year, month, day); // A task->date is always valid. The purpose is just checking date
+                                    if(!input_has_error) {
+                                        task->date_year = year;
+                                        task->date_month = month;
+                                        task->date_day = day;
+                                        printf("Task deadline changed.\n");
+                                        unsaved_changes = 1;
+                                    } else printf("Error: Deadline value invalid.\n");
                                 } else printf("Error: Task edit parameter is invalid. Valid paramaters: -N, -P, -D\n");
 
                             } else printf("Error: Task edit parameter is invalid. Valid paramaters: -N, -P, -D\n");
@@ -354,7 +382,7 @@ int main() {
                         if(page == 2)
                             board = NULL;
                         page--;
-                        next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                        next_page(page - 1, board, list, task, unsaved_changes); // this function increase page value, so page - 1 is used
                     } else {
                         // invalid page;
                         page = 1;
@@ -379,7 +407,8 @@ int main() {
                                 board = NULL;
                                 page--; // go to previous page
                                 unsaved_changes = 1;
-                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                                user->boards_count--;
+                                next_page(page - 1, board, list, task, unsaved_changes); // this function increase page value, so page - 1 is used
                             }
                         } else if(page == 3) {
                             int result = remove_list(board, list);
@@ -388,10 +417,11 @@ int main() {
                                 printf("List deleted.\n");
                                 list = NULL;
                                 task = NULL;
+                                board->lists_count--;
                                 page--; // go to previous page
                                 unsaved_changes = 1;
 
-                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                                next_page(page - 1, board, list, task, unsaved_changes); // this function increase page value, so page - 1 is used
                             }
                         } else if(page == 4) {
                             int result = remove_task(list, task);
@@ -399,13 +429,26 @@ int main() {
                             else {
                                 printf("Task deleted.\n");
                                 task = NULL;
+                                list->tasks_count--;
                                 page--; // go to previous page
                                 unsaved_changes = 1;
-                                next_page(page - 1, board, list, task); // this function increase page value, so page - 1 is used
+                                next_page(page - 1, board, list, task, unsaved_changes); // this function increase page value, so page - 1 is used
                             }
                         }
                     } else printf("Removing canceled.\n");
-                } else if(page == 4 && task !=NULL && !strcmp(command, "MOVE")) {
+                } else if(page == 3 && !strcmp(command, "SORT")) {
+                    char by[5];
+                    scanf("%s", by);
+                    if(by[0] == '-') {
+                        if(by[1] == 'p' || by[1] == 'P') {
+                            sort_list(list, 0);
+                            unsaved_changes = 1;
+                        } else if(by[1] == 'd' || by[1] == 'D') {
+                            sort_list(list, 1);
+                            unsaved_changes = 1;
+                        } else printf("Error: Invalid sort parameter. [P/D]\n");
+                    }
+                } else if(page == 4 && task != NULL && !strcmp(command, "MOVE")) {
                     struct list *target_list;
                     show_lists(board->my_lists);
                     printf("Select the target list: ");
@@ -416,6 +459,8 @@ int main() {
                         if(result != 1) show_error(result);
                         else {
                             printf("Task moved to selected list. You are now in the target list.\n");
+                            list->tasks_count--;
+                            target_list->tasks_count++;
                             unsaved_changes = 1;
                             list = target_list;
                         }
