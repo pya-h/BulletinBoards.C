@@ -1,5 +1,5 @@
 @echo off
 echo Compiling ...
-gcc program.c BOARD.c CSVFILE.c
+gcc MAIN.C BOARDS-DATA.C
 echo Done.
 .\a.exe
