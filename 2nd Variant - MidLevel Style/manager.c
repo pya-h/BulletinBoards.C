@@ -87,13 +87,12 @@ int register_user(char username[], char password[]) {
 struct user *login_user(int folder_number, char username[], char password[]) {
     char index_filename[30];
     FILE* f_user_index_reader;
-    struct user *user = (struct user *) malloc(sizeof(struct user));
+    struct user *user = (struct user *) calloc(1, sizeof(struct user));
     sprintf(index_filename, "user-%d\\index.csv", folder_number);
     f_user_index_reader = open_file_for_read(index_filename);
 
     if(f_user_index_reader) {
         fscanf(f_user_index_reader, "%49[^,],%s\n", user->username, user->password);
-        fscanf(f_user_index_reader, "%49[^,]\n", user->username);
         fclose(f_user_index_reader);
         if(!strcmp(user->username, username) && !strcmp(user->password, password)) {
             user->folder_number = folder_number;
@@ -106,34 +105,42 @@ struct user *login_user(int folder_number, char username[], char password[]) {
 }
 
 char* get_filename(int user_folder_number, char* file_type) {
-    char* filename = (char*)malloc(sizeof(char) * 30);
+    char* filename = (char*)calloc(30, sizeof(char));
     sprintf(filename, "user-%d\\%s.csv", user_folder_number, file_type);
     return filename;
 }
 
 int save(struct user *user) {
     /* User contains its all data by pointers
-     this function will save all. */
+     this function will sav
+     e all. */
     char* index_filename = get_filename(user->folder_number, "index");
     char* list_filename = get_filename(user->folder_number, "list");
     char* task_filename = get_filename(user->folder_number, "task");
-    FILE* f_user_index_writer = get_user_file(index_filename, user->username, user->password);
+    FILE* f_user_index_writer = get_user_
     FILE* f_list_writer;
     FILE* f_task_writer;
     struct board *board = user->my_boards;
-    int board_number = 1, list_number = 1;
+    struct list *list;
+    struct task *task;
+    int tasks_saved = 0;
+    int board_number = 1;
+    int list_number = 1;
+    int lists_saved = 0;
+
     if(!f_user_index_writer)
         return errno_user_files_not_available;
     
     fprintf(f_user_index_writer, "board_number,board_name\n"); // Index file containes board data too
     f_list_writer = fopen(list_filename, "w"); //open list file for write all board lists
+
     if(!f_list_writer) {
         fclose(f_list_writer);
         fclose(f_user_index_writer);
         return errno_user_files_not_available;
     }
 
-    fprintf(f_list_writer, "board_number,list_number,list_name\n");
+    fprintf(f_list_writer, "board_number,list_number,name\n");
     f_task_writer = fopen(task_filename, "w"); //open task file for write task board lists
     if(!f_task_writer) {
         fclose(f_task_writer);
@@ -141,21 +148,24 @@ int save(struct user *user) {
         fclose(f_user_index_writer);
         return errno_user_files_not_available;
     }
-    fprintf(f_task_writer, "board_number,list_number,task_name,task_priority,task_year,task_month,task_day\n");
-
+    fprintf(f_task_writer, "board_number,list_number,priority,year,month,day,name\n");
     while(board != NULL){
-        struct list *list = board->my_lists;
         fprintf(f_user_index_writer, "%d,%s\n", board_number, board->name); // Index file containes board data too
+        list = board->my_lists;
         list_number = 1;
         
         while(list != NULL) { // write lists
-            struct task *task = list->my_tasks;
+            // printf("List #%d savinng...\n", list_number);
             fprintf(f_list_writer, "%d,%d,%s\n", board_number, list_number, list->name); // Index file containes board data too
-            while(task != NULL) { // write lists
-                fprintf(f_task_writer, "%d,%d,%s,%d,%d,%d,%d\n", board_number, list_number, task->name, task->priority, task->date.year, task->date.month, task->date.day); // Index file containes board data too
+            task = list->my_tasks;
+            while(task != NULL) { // Write lists
+                fprintf(f_task_writer, "%d,%d,%d,%d,%d,%d,%s\n", board_number, list_number, task->priority, task->date->year, task->date->month, task->date->day, task->name);
+                tasks_saved++;
                 task = task->next;
             }
+            task = NULL;
             list_number++;
+            lists_saved++;
             list = list->next;
         }
 
@@ -165,5 +175,86 @@ int save(struct user *user) {
     fclose(f_task_writer);
     fclose(f_list_writer);
     fclose(f_user_index_writer);
+    printf("Total Result:\n");
+    printf("%d boards saved.\n", board_number-1);
+    printf("%d lists saved.\n", lists_saved);
+    printf("%d tasks saved.\n", tasks_saved);
+
+    return 1;
+}
+
+int load(struct user *user) {
+    /* User contains its all data by pointers
+     this function will sav
+     e all. */
+    char* index_filename = get_filename(user->folder_number, "index");
+    char* list_filename = get_filename(user->folder_number, "list");
+    char* task_filename = get_filename(user->folder_number, "task");
+    FILE* f_user_index_reader = open_file_for_read(index_filename);
+    FILE* f_list_reader = open_file_for_read(list_filename);
+    FILE* f_task_reader = open_file_for_read(task_filename);
+    struct board *board = user->my_boards;
+    struct list *list = NULL;
+    struct task *task = NULL;
+    int tasks_loaded = 0;
+    int board_number = 1;
+    int list_number = 1;
+    int lists_loaded = 0;
+
+    if(!f_user_index_reader)
+        return errno_user_files_not_available;    
+
+    char temp_line[100];
+    for(int i = 0; i < 2 && !feof(f_user_index_reader); i++) {
+        fscanf(f_user_index_reader, "%99[^\n]\n", temp_line); // ignore line
+    } // ignore username and password line and board header line
+
+    f_list_reader = fopen(list_filename, "r"); //open list file for write all board lists
+
+    if(!f_list_reader) {
+        fclose(f_list_reader);
+        fclose(f_user_index_reader);
+        return errno_user_files_not_available;
+    }
+
+    f_task_reader = fopen(task_filename, "r"); //open task file for write task board lists
+    if(!f_task_reader) {
+        fclose(f_task_reader);
+        fclose(f_list_reader);
+        fclose(f_user_index_reader);
+        return errno_user_files_not_available;
+    }
+
+    while(!feof(f_user_index_reader){
+        fprintf(f_user_index_reader, "%d,%s\n", board_number, board->name); // Index file containes board data too
+        list = board->my_lists;
+        list_number = 1;
+        
+        while(!feof(f_list_reader)) { // write lists
+            // printf("List #%d savinng...\n", list_number);
+            fprintf(f_list_reader, "%d,%d,%s\n", board_number, list_number, list->name); // Index file containes board data too
+            task = list->my_tasks;
+            while(!feof(f_task_reader)) { // Write lists
+                fprintf(f_task_reader, "%d,%d,%d,%d,%d,%d,%s\n", board_number, list_number, task->priority, task->date->year, task->date->month, task->date->day, task->name);
+                tasks_loaded++;
+                task = task->next;
+            }
+            task = NULL;
+            list_number++;
+            lists_loaded++;
+            list = list->next;
+        }
+
+        board_number++;
+        board = board->next;
+    }
+    fclose(f_task_reader);
+    fclose(f_list_reader);
+    fclose(f_user_index_reader);
+    printf("Total Result:\n");
+    printf("%d boards saved.\n", board_number-1);
+    printf("%d lists saved.\n", lists_loaded);
+    printf("%d tasks saved.\n", tasks_loaded);
+
     return 1;
 }

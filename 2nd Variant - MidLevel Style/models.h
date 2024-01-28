@@ -12,21 +12,23 @@
 #define errno_task_prioirty_invalid -10
 
 struct date {
-    int year, month, day;
+    int year;
+    int month; 
+    int day;
 };
 // store task data
 struct task {
     char name[500];
     int priority; // high priority <=> high number
-    struct date date;
     struct task *next; // task link list
+    struct date *date;
 };
 // list struct and link list
 // store list data and tasks added to that list
 struct list {
     char name[500];
-    struct task *my_tasks;
     struct list *next;
+    struct task *my_tasks;
 };
 // board struct and link list
 // store board data and lists of that board

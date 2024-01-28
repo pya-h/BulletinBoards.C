@@ -197,9 +197,8 @@ int main() {
                     user_folder = get_user_folder(username);
                     if(user_folder > 0) { // if user found
                         user = login_user(user_folder, username, password);
-
                         if(!user) {
-                            printf("username or password is invalid.");
+                            printf("username or password is invalid.\n");
                         }
                     } else printf("No such user found.\n");
 
@@ -212,17 +211,18 @@ int main() {
                             printf("Registeration done! You can now login as %s.\n", username);
                         } else show_error(user_folder);
                     } else {
-                        printf("Error: username exists! try again ... ");
+                        printf("Error: username exists! try again ...\n");
                     }
                 } else if(!strcmp(command, "HELP"))
                     show_help(page);
                 else printf("Command not found.\n");
             }
+            save(user);
             page = next_page(page, board, list, task);
-            
         } else {
             char name[500]; 
             int number;
+
             if(check_page(&page, board, list, task)) { // Check and correct page number until its ok then get input
                 command = get_command();
                 if(!strcmp(command, "HELP"))
@@ -313,7 +313,7 @@ int main() {
                                 } else if(param == 'P' || param == 'p') {
                                     int priority, input_has_error;
                                     scanf("%d", &priority);
-                                    input_has_error = check_task_input(priority, task->date.year, task->date.month, task->date.day); // A test date just sent. The purpose is just checking priority
+                                    input_has_error = check_task_input(priority, task->date->year, task->date->month, task->date->day); // A test date just sent. The purpose is just checking priority
                                     // I used task->date because its validated before and its not invalid. so only ne pririty will be checked
                                     if(!input_has_error) {
                                         task->priority = priority;
@@ -324,9 +324,9 @@ int main() {
                                     int year, month, day, input_has_error;
                                     scanf("%d %d %d", &year, &month, &day);
                                     input_has_error = check_task_input(task->priority, 2024, 1, 1); // A task->date is always valid. The purpose is just checking date
-                                    task->date.year = year;
-                                    task->date.month = month;
-                                    task->date.day = day;
+                                    task->date->year = year;
+                                    task->date->month = month;
+                                    task->date->day = day;
                                     printf("Task deadline changed.\n");
                                     unsaved_changes = 1;
                                 } else printf("Error: Task edit parameter is invalid. Valid paramaters: -N, -P, -D\n");

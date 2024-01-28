@@ -2,7 +2,7 @@
 
 struct board *init_boards(char first_board_name[]) {
     // this is for init user->myboards
-    struct board* my_boards = (struct board *) malloc(sizeof(struct board));
+    struct board* my_boards = (struct board *) calloc(1, sizeof(struct board));
     sprintf(my_boards->name, "%s", first_board_name);
     my_boards->next = NULL;
     my_boards->my_lists = NULL;
@@ -12,7 +12,7 @@ struct board *init_boards(char first_board_name[]) {
 int add_board(struct board *my_boards, char name[]) {
     // Because if the my_boards is empty, it needs to update its address
     struct board* b = my_boards;
-    struct board* new_board = (struct board*) malloc(sizeof(struct user));
+    struct board* new_board = (struct board*) calloc(1, sizeof(struct user));
     sprintf(new_board->name, "%s", name);
     int board_number = 1;
     while(b->next != NULL) {
@@ -73,7 +73,7 @@ int remove_board(struct user *user, struct board *board) {
 
 struct list *init_lists(char first_list_name[]) {
     // this is for init user->mylists
-    struct list* my_lists = (struct list *) malloc(sizeof(struct list));
+    struct list* my_lists = (struct list *) calloc(1, sizeof(struct list));
     sprintf(my_lists->name, "%s", first_list_name);
     my_lists->next = NULL;
     my_lists->my_tasks = NULL; // New list has no tasks
@@ -83,7 +83,7 @@ struct list *init_lists(char first_list_name[]) {
 int add_list(struct list *my_lists, char name[]) {
     // Because if the my_lists is empty, it needs to update its address
     struct list* lst = my_lists;
-    struct list* new_list = (struct list*) malloc(sizeof(struct user));
+    struct list* new_list = (struct list*) calloc(1, sizeof(struct user));
     sprintf(new_list->name, "%s", name);
     int list_number = 1;
     while(lst->next != NULL) {
@@ -155,12 +155,13 @@ int check_task_input(int priority, int year, int month, int day) {
 
 struct task *init_tasks(char first_task_name[], int first_task_priority, int year, int month, int day) {
     // this is for init user->mytasks
-    struct task* my_tasks = (struct task *) malloc(sizeof(struct task));
+    struct task* my_tasks = (struct task *) calloc(1, sizeof(struct task));
     sprintf(my_tasks->name, "%s", first_task_name);
     my_tasks->priority = first_task_priority;
-    my_tasks->date.year = year;
-    my_tasks->date.month = month;
-    my_tasks->date.day = day;
+    my_tasks->date = (struct date *) calloc(1, sizeof(struct date));
+    my_tasks->date->year = year;
+    my_tasks->date->month = month;
+    my_tasks->date->day = day;
     my_tasks->next = NULL;
     return my_tasks;
 }
@@ -168,12 +169,14 @@ struct task *init_tasks(char first_task_name[], int first_task_priority, int yea
 int add_task(struct task *my_tasks, char name[], int priority, int year, int month, int day) {
     // Because if the my_tasks is empty, it needs to update its address
     struct task* task = my_tasks;
-    struct task* new_task = (struct task*) malloc(sizeof(struct user));
+    struct task* new_task = (struct task*) calloc(1, sizeof(struct user));
     sprintf(new_task->name, "%s", name);
     new_task->priority = priority;
-    new_task->date.year = year;
-    new_task->date.month = month;
-    new_task->date.day = day;
+    new_task->date = (struct date *) calloc(1, sizeof(struct date));
+    new_task->date->year = year;
+    new_task->date->month = month;
+    new_task->date->day = day;
+    new_task->next = NULL;
     int task_number = 1;
     while(task->next != NULL) {
         task = task->next;
@@ -218,7 +221,7 @@ void show_single_task(struct task *task, int number) {
         priority = "Low";
     if(number > 0) // when show_tasks call this function, it provides an task number
         printf("%d: ", number);
-    printf("%s, %s, %d/%d/%d\n", task->name, priority, task->date.year, task->date.month, task->date.day);
+    printf("%s, %s, %d/%d/%d\n", task->name, priority, task->date->year, task->date->month, task->date->day);
 }
 
 int remove_task(struct list *list, struct task *task) {
