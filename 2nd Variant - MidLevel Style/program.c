@@ -109,6 +109,9 @@ void show_error(int error_code) {
         case errno_task_data_invalid:
             printf("Enter a valid date as [year] [month] [day]\n");
             break;
+        case errno_user_files_not_available:
+            printf("Program cannot access user data files.\n");
+            break;
         case errno_board_not_selected:
             printf("No board selected.\n");
             break;
@@ -417,6 +420,13 @@ int main() {
                             list = target_list;
                         }
                     } else printf("Error: List not found.\n");
+                } else if(!strcmp(command, "SAVE")) {
+                    int result = save(user);
+                    if(result != 1) show_error(result);
+                    else {
+                        printf("Everything saved.\n");
+                        unsaved_changes = 0;
+                    }
                 } else printf("Error: No such command.\n");
             }
         }   
