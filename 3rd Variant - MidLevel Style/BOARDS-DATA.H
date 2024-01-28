@@ -37,8 +37,11 @@ struct BOARD
     struct LIST *Lists;
 };
 
-void SetImportance(struct TASK*);
-void WriteData(char *UserName, char *Password, struct BOARD Boards[], int End);
+void     SetImportance(struct TASK*);
+void     CheckBoardCapacityForLists(struct BOARD Boards[], int BoardNumber);
+void     CheckListCapacityForTasks(struct BOARD Boards[], int BoardNumber, int ListNumber);
+
+void     WriteData(char *UserName, char *Password, struct BOARD Boards[], int End);
 // FILE *get_user_file(char *index_filename, char username[], char password[]);
 // int get_user_folder(char username[]);
 // int get_next_folder_number();
