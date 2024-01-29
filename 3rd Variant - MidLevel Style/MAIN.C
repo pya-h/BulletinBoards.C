@@ -5,25 +5,25 @@
 #include <ctype.h>
 #include <conio.h>
 
-void    ShowBoards(struct BOARD Boards[], int End);
+void ShowBoards(struct BOARD Boards[], int End);
 
-void    ShowLists(struct BOARD Boards[], int Bn); // Bn = Board Number
+void ShowLists(struct BOARD Boards[], int Bn); // Bn = Board Number
 
-void    ShowTasks(struct LIST Lists[], int Ln); // Ln = List Number
+void ShowTasks(struct LIST Lists[], int Ln); // Ln = List Number
 
-void    ShowOneTask(struct TASK Task);
+void ShowOneTask(struct TASK Task);
 
-int     main()
+int main()
 {
-    char UserName[] = "test"; // Agar In Meghdar Begirad Yani Karbar Vorod Movafagh Dashte /.
-    char Password[] = "test";
-    int BoardCapacity = 100;
-    int Bi = 0;                                                                          // Neshangare Akharin Board /.
-    struct BOARD *Boards = (struct BOARD *)malloc(sizeof(struct BOARD) * BoardCapacity); // arayei Az Boards ba tool Avalieh 100 /.
+    char *UserName = NULL; // Agar In Meghdar Begirad Yani Karbar Vorod Movafagh Dashte /.
+    char *Password = NULL;
+
+    struct BOARDS_DATA *BoardsData = NULL;
     int CurrentBoardNumber = -1, CurrentListNumber = -1;
+
     while (1)
     {
-        if (UserName == NULL)
+        if (BoardsData == NULL)
         { // Agar Login Nashodeh
             int user_folder;
             char InputUser[1000], InputPassword[1000], Input[1000];
@@ -31,23 +31,38 @@ int     main()
             // login username InputPassword /.
             // register username InputPassword /.
             puts("Please login or register:");
-            scanf("%s %s %s", Input, InputUser, InputPassword);
+            scanf("%s %s %s%*c", Input, InputUser, InputPassword);
 
             if (strcmp(Input, "login") == NULL)
             {
-                // UserName = login_user(InputUser, Password);
-                if (UserName == NULL)
-                    puts("Username or Password Incorrect! Try again!\n");
+                BoardsData = CheckLogin(InputUser, InputPassword);
+                if (BoardsData == NULL)
+                    puts("Username or Password Incorrect! Try again!");
+                else
+                {
+                    UserName = InputUser;
+                    Password = InputPassword;
+                }
             }
             else if (strcmp(Input, "register") == NULL)
             {
-                // UserName = register_user(username, password);
-                if (UserName == NULL)
-                    puts("Register Error! Try again!\n");
+                if(NULL != CheckLogin(InputUser, InputPassword)){
+                    puts("This Username Is Taken. Try Another!");
+                } else {
+
+                    BoardsData = (struct BOARDS_DATA *)malloc(sizeof(struct BOARDS_DATA) * 1);
+                    PrepareBoardsData(BoardsData);
+                    UserName = InputUser;
+                    Password = InputPassword;
+                    if (UserName == NULL)
+                        puts("Register Error! Try again!\n");
+                }
             }
         }
         else
         {
+            struct BOARD *Boards = BoardsData->Boards;
+
             char Selection;
             if (CurrentBoardNumber < 0)
             {
@@ -67,10 +82,10 @@ int     main()
                 // Be Safheyeh Entekhab Board Bar Nagardad
                 // Daghighan CurrentListNumber Hamin Kar Ra Barayeh List ha mikonad
                 {
-                    ShowBoards(Boards, Bi);
+                    ShowBoards(Boards, BoardsData->Bi);
                     printf(" => Select: ");
                     scanf("%d%*c", &Bn);
-                    if (Bn < 0 || Bn >= Bi)
+                    if (Bn < 0 || Bn >= BoardsData->Bi)
                     {
                         CurrentBoardNumber = CurrentListNumber = -1;
                         puts("Board Number Invalid! Try Again Later.");
@@ -107,21 +122,18 @@ int     main()
                 else if (Selection2 == 'a')
                 {
                     puts("Enter List Name:");
-                    CheckBoardCapacityForLists(Boards, Bn);
+                    PrepareNextList(Boards, Bn);
                     gets(Boards[Bn].Lists[Boards[Bn].Li].Name);
-                    Boards[Bn].Lists[Boards[Bn].Li].Ti = 0;
-                    Boards[Bn].Lists[Boards[Bn].Li].Capacity = 100;
-                    Boards[Bn].Lists[Boards[Bn].Li].Tasks = (struct TASK *)malloc(sizeof(struct TASK) * Boards[Bn].Lists[Boards[Bn].Li].Capacity);
                     puts("Done.");
-                    Boards[Bn].Li++;
-                    WriteData(UserName, Password, Boards, Bi);
+                    Boards->Li++;
+                    WriteData(UserName, Password, BoardsData);
                 }
                 else if (Selection2 == 'e')
                 {
                     puts("New Board Name: ");
                     gets(Boards[Bn].Name);
                     puts("Done.");
-                    WriteData(UserName, Password, Boards, Bi);
+                    WriteData(UserName, Password, BoardsData);
                 }
                 else if (Selection2 == 'd')
                 {
@@ -163,6 +175,7 @@ int     main()
                     }
                     else if (Selection3 == 'a')
                     {
+                        CheckListCapacityForTasks(Boards, Bn, Ln);
                         struct TASK *NewTask = &Boards[Bn].Lists[Ln].Tasks[Boards[Bn].Lists[Ln].Ti];
                         puts("Enter Task Name:\n");
                         gets(NewTask->Name);
@@ -173,14 +186,14 @@ int     main()
                         scanf("%d %d %d%*c", &NewTask->Deadline.D, &NewTask->Deadline.M, &NewTask->Deadline.Y);
                         puts("Done.");
                         Boards[Bn].Lists[Ln].Ti++;
-                        WriteData(UserName, Password, Boards, Bi);
+                        WriteData(UserName, Password, BoardsData);
                     }
                     else if (Selection3 == 'e')
                     {
                         puts("Enter Another List Name: ");
                         gets(Boards[Bn].Lists[Ln].Name);
                         puts("Done.");
-                        WriteData(UserName, Password, Boards, Bi);
+                        WriteData(UserName, Password, BoardsData);
                     }
                     else if (Selection3 == 'd')
                     {
@@ -215,35 +228,50 @@ int     main()
                             SetImportance(NewTask);
                             puts("Edit Deadline D M Y");
                             scanf("%d %d %d", &NewTask->Deadline.D, &NewTask->Deadline.M, &NewTask->Deadline.Y);
-                            gets(NewTask->Name);
                             puts("Done.");
-                            WriteData(UserName, Password, Boards, Bi);
+                            WriteData(UserName, Password, BoardsData);
                         }
                         else if (Selection4 == 'p')
                         {
                             continue;
+                        }
+                        else if (Selection4 == 'd')
+                        {
+                            ShowOneTask(Boards[Bn].Lists[Ln].Tasks[Tn]);
+                            puts("Delete This Task? [Y]es ");
+                            char answer = tolower(getche());
+                            if (answer == 'y')
+                            {
+                                for (int i = Tn; i < Boards[Bn].Lists[Ln].Ti - 1; i++)
+                                {
+                                    Boards[Bn].Lists[Ln].Tasks[i].Deadline.D = Boards[Bn].Lists[Ln].Tasks[i + 1].Deadline.D;
+                                    Boards[Bn].Lists[Ln].Tasks[i].Deadline.M = Boards[Bn].Lists[Ln].Tasks[i + 1].Deadline.M;
+                                    Boards[Bn].Lists[Ln].Tasks[i].Deadline.Y = Boards[Bn].Lists[Ln].Tasks[i + 1].Deadline.Y;
+
+                                    strncpy(Boards[Bn].Lists[Ln].Tasks[i].Importance,  Boards[Bn].Lists[Ln].Tasks[i + 1].Importance, sizeof(Boards[Bn].Lists[Ln].Tasks[i + 1].Importance));
+                                    strncpy(Boards[Bn].Lists[Ln].Tasks[i].Name, Boards[Bn].Lists[Ln].Tasks[i + 1].Name, sizeof(Boards[Bn].Lists[Ln].Tasks[i + 1].Name));
+                                }
+                                Boards[Bn].Lists[Ln].Ti--;
+                                free(&Boards[Bn].Lists[Ln].Tasks[Boards[Bn].Lists[Ln].Ti]);
+                                WriteData(UserName, Password, BoardsData);
+                            }
                         }
                     }
                 }
             }
             else if (Selection == 'a')
             {
-                if (Bi >= BoardCapacity)
-                {
-                    BoardCapacity += 10;
-                    Boards = (struct BOARD *)realloc(Boards, sizeof(struct BOARD) * BoardCapacity);
-                }
                 puts("Enter Board Name:\n");
-                gets(Boards[Bi].Name);
-                Boards[Bi].Capacity = 100;
-                Boards[Bi].Lists = (struct LIST *)malloc(sizeof(struct LIST) * Boards[Bi].Capacity);
+
+                PrepareNextBoard(BoardsData);
+                gets(Boards[BoardsData->Bi].Name);
                 puts("Done.");
-                Bi++;
-                WriteData(UserName, Password, Boards, Bi);
+                BoardsData->Bi++;
+                WriteData(UserName, Password, BoardsData);
             }
             else if (Selection == 's')
             {
-                ShowBoards(Boards, Bi);
+                ShowBoards(Boards, BoardsData->Bi);
             }
         }
     }
@@ -260,7 +288,7 @@ void ShowBoards(struct BOARD Boards[], int End)
 
 void ShowLists(struct BOARD Boards[], int Bn) // Bn = Board Number
 {
-    puts("Lists of Selected Board:"); // Next Line
+    puts("Lists of Selected Board:"); // PrepareNext Line
     for (int i = 0; i < Boards[Bn].Li; i++)
     {
         printf(" %d) %s\n", i, Boards[Bn].Lists[i].Name);
