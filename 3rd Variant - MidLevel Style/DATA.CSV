@@ -1,9 +1,8 @@
 ROW_TYPE,SUB_ITEMS,NAME,PASS/IMPORANCE,DEADLINE_DAY,DEADLINE_MONTH,DEADLINE_YEAR
-USER,2,test,test
-BOARD,0,Board One
-BOARD,3,Board 2
-LIST,0,Whatever
-LIST,0,Fuck off
-LIST,2,Test Name
-TASK,0,Hi,High,1,2,2022
-TASK,0,what,High,0,1,2
+USER,2,yx,yx
+BOARD,1,fuck0ff
+LIST,3,yek 2 3
+TASK,0,Tes Task 1,High,1,2,3
+TASK,0,Whatever,High,1,2,3
+TASK,0,Heh,High,2022,3,5
+BOARD,0,test 2

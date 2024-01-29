@@ -1,5 +1,5 @@
-#ifndef BOARDS_DATA
-#define BOARDS_DATA
+#ifndef BOARDS_DATA_H
+#define BOARDS_DATA_H
 // Mayahyajeh Barnameh Ma
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,20 +37,28 @@ struct BOARD
     struct LIST *Lists;
 };
 
+struct BOARDS_DATA
+{
+    struct BOARD *Boards;
+    int Capacity;
+    int Bi;
+};
+
+void     PrepareBoardsData(struct BOARDS_DATA *BoardsData);
+void     PrepareNextBoard(struct BOARDS_DATA *BoardsData);
+void     PrepareNextList(struct BOARD Board[], int BoardNumber);
+
 void     SetImportance(struct TASK*);
+void     CheckBoardCapacity(struct BOARDS_DATA *BoardsData);
 void     CheckBoardCapacityForLists(struct BOARD Boards[], int BoardNumber);
 void     CheckListCapacityForTasks(struct BOARD Boards[], int BoardNumber, int ListNumber);
 
-void     WriteData(char *UserName, char *Password, struct BOARD Boards[], int End);
-// FILE *get_user_file(char *index_filename, char username[], char password[]);
-// int get_user_folder(char username[]);
-// int get_next_folder_number();
-// int register_user(char username[], char password[]);
-// FILE *open_file_for_read(char filename[]);
-// char *get_filename(int user_folder_number, char *file_type);
-// struct user *login_user(int folder_number, char username[], char password[]);
-// int save(struct user *user);
-// int load(struct user *user);
-// void show_reminder(struct user *user);
+void     WriteData(char *UserName, char *Password, struct BOARDS_DATA *BoardsData);
+struct  BOARDS_DATA*     ReadNextUser(FILE *DataCsvFile, char UserName[], char Password[]);
+int     ReadIntegerColumn(FILE *CsvFile);
+void     ReadStringColumn(char *Destination, FILE *SourceCsvFile);
+int     ReadCheckString(FILE *CsvFile, char *CompareString);
+int      IsColumnSeparator(char c);
+struct BOARDS_DATA   *CheckLogin(char *UserName, char *Password);
 
 #endif // Payan Header BOARDS-DATA.h
