@@ -141,7 +141,7 @@ short TaskLists_save(List *taskLists, Long containerBoardId)
     }
     fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER);
     
-    for (int i = 0; i < taskLists->length; i++)
+    for (Long i = 0; i < taskLists->length; i++)
     {
         taskList = (TaskList *)List_at(taskLists, i);
         fprintf(taskListFile, "%llu%s\"%s\"%s%llu\n", taskList->id, COLUMN_DELIMITER, taskList->title,

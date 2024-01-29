@@ -34,9 +34,11 @@
     Task *createTask(TaskList *, char [], Priority, string);
     List *getTasks(TaskList *);
     short Tasks_save(List *, Long);
+    short Tasks_delete(List *, Task *);
 
     string Task_getError(Task *);
     void Task_failure(Task *, string);
     void Task_print(Task *);
+    Long Task_index(Task *, List *);
     string Priority_toString(Priority);
 #endif
