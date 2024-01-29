@@ -103,20 +103,17 @@ void *List_at(List *list, Long index)
 void ListItem_dump(ListItem *trash)
 {
     trash->next = trash->prev = NULL;
+    free(trash->data);
     free(trash);
 }
 
 short List_delete(List *list, Long index)
 {
     // TODO:
-    if (!List_at(list, index)) // updates .lastAccessedItem and .lastAccessedIdex
-        return 0;              // item was not found so dont do anything.
-    ListItem *trash = list->lastAccessedItem;
-    list->lastAccessedItem = NULL;
-    list->lastAccessedIndex = -1; // last accessed item is deleted and no Longer in the list; so reset these two values related to it
-
-    if (trash == list->first)
-    { // or
+    ListItem *trash;
+    if (!index) // list->lastAccessed never is set on the first and last items. so deleting them is checked separately
+    {
+        trash = list->first;
         if (list->length == 1)
         {
             // if the list has only one element:
@@ -124,17 +121,23 @@ short List_delete(List *list, Long index)
             ListItem_dump(trash);
             return 1;
         }
-
         list->first = list->first->next;
         list->first->prev = NULL;
     }
-    else if (trash == list->last)
-    {
+    else if (index == list->length - 1)
+    { // deleting first and last item is different from middle items
+        trash = list->last;
         list->last = list->last->prev;
         list->last->next = NULL;
     }
-    else
+    else // if item is in the middle
     {
+
+        if (!List_at(list, index)) // updates .lastAccessedItem and .lastAccessedIdex
+            return 0;              // item was not found so dont do anything.
+        trash = list->lastAccessedItem;
+        list->lastAccessedItem = NULL;
+        list->lastAccessedIndex = -1; // last accessed item is deleted and no Longer in the list; so reset these two values related to it
         // if the item is in the middle
         trash->prev->next = trash->next;
         trash->next->prev = trash->prev;
@@ -143,6 +146,7 @@ short List_delete(List *list, Long index)
     list->length--;
     return 1; // item found and deleted successfully
 }
+
 
 
 string List_getError(List *list)

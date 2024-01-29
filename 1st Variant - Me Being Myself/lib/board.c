@@ -142,7 +142,7 @@ short Boards_save(List *boards, Long ownerId)
     }
 
     fprintf(userBoardsFile, "Id%sBoard Title\n", COLUMN_DELIMITER);
-    for (int i = 0; i < boards->length; i++)
+    for (Long i = 0; i < boards->length; i++)
     {
         board = (Board *)List_at(boards, i);
         fprintf(userBoardsFile, "%llu%s\"%s\"\n", board->id, COLUMN_DELIMITER, board->title); // save all boards by board

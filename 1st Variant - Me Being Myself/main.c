@@ -58,7 +58,7 @@ int main()
                         CLEAR_SCREEN();
                         continue; // go back imediately, because this will ignore the Press any key section
                     }
-                    selectedItemIndex--; // menu items are started from 1; indeces are from 0; so we decrease the input by 1
+                    selectedItemIndex--;                                                        // menu items are started from 1; indeces are from 0; so we decrease the input by 1
                     Board *selectedBoard = (Board *)List_at(session.boards, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
                     if (!selectedBoard)
@@ -281,7 +281,7 @@ int main()
                         CLEAR_SCREEN();
                         continue;
                     }
-                    selectedItemIndex--;// now selectedItemIndex is the index of task
+                    selectedItemIndex--;                                                    // now selectedItemIndex is the index of task
                     Task *selectedTask = (Task *)List_at(session.tasks, selectedItemIndex); // remember that ListItem* pointer is also available with list_.lstAccessed ..
 
                     if (!selectedTask)
@@ -314,7 +314,7 @@ int main()
                 session.currentTask->error[0] = '\0';                 // reset error value;
 
                 strncpy(oldTitle, session.currentTask->title, MAX_TASK_TITLE_LENGTH); // and save old title in case something goes wrong!
-                Task_print(session.currentTask); // print current state of the task
+                Task_print(session.currentTask);                                      // print current state of the task
                 PRINT_DASH_ROW();
                 printf("What do you want to do with this task?\n\t1 Change Title\n\t2 Change Deadline\n\t3 Change Priority\n\t4 Delete\n\t5 Move It To Another List\n\t0 Go Back ");
                 // force valid input
@@ -365,11 +365,19 @@ int main()
                 case 4: // delete task
                     printf("Board that you intend to delete:\n");
                     PRINT_DASH_ROW();
-                    if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                    if (!areYouSure("Deleting this Task "))
                         break;
+                    if (Tasks_delete(session.tasks, session.currentTask))
+                    {
+                        printf("Task successfully deleted.\n");
+                        session.currentTask = NULL;
+                    }
+                    else
+                        printf("Cannot delete this task, Please try again later.\n");
+
                     break;
                 case 5:
-                    //TODO: MOVE TO ANOTHER LIST
+                    // TODO: MOVE TO ANOTHER LIST
                     break;
                 case 0:
                     CLEAR_SCREEN();
@@ -377,7 +385,8 @@ int main()
                     continue; // go back imediately; as used previously, using continue will prevent the execution of the Press any key section
                 }
                 // save changes
-                session.error = Task_getError(session.currentTask);
+                if (session.currentTask)
+                    session.error = Task_getError(session.currentTask);
 
                 if (!session.error && Tasks_save(session.tasks, session.currentList->id)) // if the function returns 1 it means everything successfully worked out.
                 {
