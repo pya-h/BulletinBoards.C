@@ -24,10 +24,9 @@
 <h2>Todos:</h2>
 <ol>
     <li><b>Add Reminders</b></li>
-    <li><b>Implement Sorting</bi></li>
+    <li><b>Implement Sorting</b></li>
     <li>Add logout option</li>
     <li>Allow users to auto login til 24 ours of last use</li>
-	
     <li><s>Complete delete board section</s></li>
     <li><s>Move tasks from a List to another one</s></li>
     <li><s>Use .csv excel files instead of normal txt files.</s></li>
