@@ -16,8 +16,8 @@
     <li>Modify Board/List Title & Change Task's Title/Priority/Deadline</li>
     <li>Implemented a Cool LinkList model;</li>
     <li>Special error handling in C</li>
-	<li>Though It's C, But MVC Model Design Concepts Was Used.<li>
-	<li>Reusable Models & Headers.<li>
+	<li>Though It's C, But MVC Model Design Concepts Was Used.</li>
+	<li>Reusable Models & Headers.</li>
 	<li>Clean UI</li>
 </ol>
 <hr />
