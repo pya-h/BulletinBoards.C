@@ -6,9 +6,8 @@
     #include <stdio.h>
 
     #define MAX_TASK_TITLE_LENGTH 256
-    #define FOLDER_TASKS "Tasks"
     #define MAX_DATE_LENGTH 16
-
+    #define FOLDER_TASKS "Tasks"
     typedef struct tm Date;
 
     typedef enum Priority {
@@ -39,6 +38,5 @@
     string Task_getError(Task *);
     void Task_failure(Task *, string);
     void Task_print(Task *);
-    Long Task_index(Task *, List *);
     string Priority_toString(Priority);
 #endif

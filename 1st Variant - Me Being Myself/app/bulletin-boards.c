@@ -131,7 +131,9 @@ Long selectCollectionInterface(List *collection, MenuOption collectionType)
             printf("\n%10llu\t%s ", i + 1, title);
     }
     printf("\n%10d\tGo Back ", MENU_OPTION_GOBACK);
-    scanf("%llu", &choice);
+    scanf("%llu%*c", &choice); // There is bug while using getch after scanf
+    // scanf causes \n char to remain in stream and this way getch gets its character even usr has not press anything
+    // %*c will ignore that next line character
     return choice;
 }
 

@@ -212,24 +212,3 @@ void Task_print(Task *task)
     printf("%10llu\t\t%8s\t\t%04d-%02d-%02d\t\t%s\n", task->id, Priority_toString(task->priority),
            task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday, task->title);
 }
-
-Long Task_index(Task *task, List *tasks)
-{
-    Task *tk;
-    for (Long i = 0; i < tasks->length; i++)
-    {
-        tk = (Task *)List_at(tasks, i);
-        if (tk == task)
-            return i;
-    }
-    return -1; // not found
-}
-
-short Tasks_delete(List *tasks, Task *task)
-{
-    Long taskIndex = Task_index(task, tasks);
-    if (taskIndex >= 0)
-        return List_delete(tasks, taskIndex); // if deletion was ok return 1 otherwise 0
-    Task_failure(task, "Task not found in task list. Something has gone wrong in the app. Try reloading this app.");
-    return 0; // task not found
-}

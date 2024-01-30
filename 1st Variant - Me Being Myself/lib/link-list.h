@@ -33,9 +33,12 @@
     void ListItem_dump(ListItem *);
     ListItem *List_add(List *list, void *data);
     void *List_at(List *list, Long index);
-    short List_delete(List *list, Long index);
+    short List_deleteByIndex(List *list, Long index);
     string List_getError(List *list);
     // void **List_toArray(List *list, Long index);
     void List_failure(List *, string);
-    
+    Long List_getIndex(List *, void *);
+
+    short List_deleteByItemData(List *, void *);
+   
 #endif //LINK_LIST_H

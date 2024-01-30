@@ -107,7 +107,7 @@ void ListItem_dump(ListItem *trash)
     free(trash);
 }
 
-short List_delete(List *list, Long index)
+short List_deleteByIndex(List *list, Long index)
 {
     // TODO:
     ListItem *trash;
@@ -164,4 +164,26 @@ void List_failure(List *list, string msg)
 {
     List_reset(list);
     sprintf(list->error, "Unexpected Behaviour:\t%s\n", msg);
+}
+
+Long List_getIndex(List *list, void *data)
+{
+    void *dataAtI;
+    for (Long i = 0; i < list->length; i++)
+    {
+        dataAtI = List_at(list, i);
+        if (data == dataAtI) // if the addreses are the same
+            return i;
+    }
+    List_failure(list, "The item does not exist! So cannot retrieve its index!");
+    return 0; // not found
+}
+
+short List_deleteByItemData(List *list, void *dataDump)
+{
+    Long dataDumpIndex = List_getIndex(list, dataDump);
+    string error = List_getError(list);
+    if (error == NULL && dataDumpIndex >= 0)
+        return List_deleteByIndex(list, dataDumpIndex); // if deletion was ok return 1 otherwise 0
+    return 0; // task not found
 }
