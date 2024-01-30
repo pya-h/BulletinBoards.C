@@ -64,7 +64,7 @@ int main()
                     if (!selectedBoard)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.boards->length);
+                        fprintf(stderr, "You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.boards->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
@@ -111,12 +111,12 @@ int main()
                         List *listIds = getTaskListsIds(selectedBoard); // with this list we findout wich task files should be deleted
 
                         char boardRelatedFile[MAX_FILENAME_LENGTH] = {'\0'}; // List and task files address that are related to this board
-                        if (listIds->length > 0) // As Long is unsigned, This check is necessary
-                        {                        // because when the board doesnt have any Lists, ->length - 1 will causes "OVERFLOW" and the loop runs unexpectedly
+                        if (listIds->length > 0)                             // As Long is unsigned, This check is necessary
+                        {                                                    // because when the board doesnt have any Lists, ->length - 1 will causes "OVERFLOW" and the loop runs unexpectedly
                             while (listIds->length > 0)
                             {
                                 Long taskFileNameIdentifier = *((Long *)List_at(listIds, 0)); // delete the first item until no item is left
-                                 // each item of the listIds list is a TaskListId
+                                                                                              // each item of the listIds list is a TaskListId
                                 // by TaskListId we delete the task file related to this board
 
                                 SET_DATA_FILE(boardRelatedFile, FOLDER_TASKS, taskFileNameIdentifier);
@@ -242,7 +242,7 @@ int main()
                     if (!selectedTaskList)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.lists->length);
+                        fprintf(stderr, "You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.lists->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
@@ -283,7 +283,6 @@ int main()
                     }
                     break;
                     case MENU_OPTION_DELETE:
-                        printf("Board that you intend to delete:\n");
                         TaskList_print(selectedTaskList);
                         PRINT_DASH_ROW();
                         if (!areYouSure("Deleting this List?\n**Warning: Every Task inside this List will be cleared too.!"))
@@ -305,6 +304,7 @@ int main()
                                 printf("List successfully deleted.\n");
                                 session.currentTask = NULL;
                                 session.currentList = NULL;
+                                session.currentBoard = NULL; // go back to boards menu
                                 selectedTaskList = NULL;
                             }
                             else
@@ -351,7 +351,7 @@ int main()
                        MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_GOBACK);
                 while ((choice = GET_MENU_OPTION()) != MENU_OPTION_CREATE && choice != MENU_OPTION_VIEW && choice != MENU_OPTION_GOBACK)
                     ; // get input until input is valid
-                puts("\n");
+                printf("\n");
                 switch (choice)
                 {
                 case MENU_OPTION_CREATE:
@@ -394,7 +394,7 @@ int main()
                     if (!selectedTask)
                     {
                         // if index isin valid amd a NULL item returned:
-                        printf("You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.tasks->length);
+                        fprintf(stderr, "You selected: %llu, but the range is: [1-%llu]\n", selectedItemIndex + 1, session.tasks->length);
                         fprintf(stderr, "Operation Failure:\n\tYou\'ve selected an out of range item!\n\tNext time, Please select more accurately ...\n");
                         break; // break out of switch
                     }
@@ -494,6 +494,49 @@ int main()
                     break;
                 case 5:
                     // TODO: MOVE TO ANOTHER LIST
+                    // select the board where the List this task is going to, is.
+                    selectedItemIndex = selectCollectionInterface(session.boards, COLLECTION_TYPE_BOARD); // menu items are started at 1
+                    // now selectedItemIndex is the index of board
+                    if (selectedItemIndex == MENU_OPTION_GOBACK)
+                    {
+                        CLEAR_SCREEN();
+                        continue; // go back imediately, because this will ignore the Press any key section
+                    }
+                    if (selectedItemIndex >= 1 && selectedItemIndex <= session.boards->length)
+                    {
+                        Board *destinationBoard = (Board *)List_at(session.boards, selectedItemIndex - 1);
+                        if (destinationBoard != NULL)
+                        {
+                            List *taskListsOfThisBoard = getTaskLists(destinationBoard);
+                            if (taskListsOfThisBoard->length > 0)
+                            {
+                                // Now show the Lists of this board
+                                selectedItemIndex = selectCollectionInterface(taskListsOfThisBoard, COLLECTION_TYPE_LIST); // menu items are started at 1
+                                if (selectedItemIndex == MENU_OPTION_GOBACK)
+                                {
+                                    CLEAR_SCREEN();
+                                    continue; // go back imediately, because this will ignore the Press any key section
+                                }
+                                if (selectedItemIndex >= 1 && selectedItemIndex <= taskListsOfThisBoard->length)
+                                { // TODO: CHECK POSSIBLE ERRORS
+                                    TaskList *destinationTaskList = (TaskList *) List_at(taskListsOfThisBoard, selectedItemIndex - 1);
+                                    
+                                    // now destion is completely selected; time to move the task
+                                    Task_displace(session.currentTask, destinationTaskList, session.tasks); // check error
+                                }
+                                else
+                                {
+                                    fprintf(stderr, "Wrong index! Input range is [1 - %llu]", taskListsOfThisBoard->length);
+                                }
+                            }
+                            else
+                            {
+                                Task_failure(session.currentTask, "The selected board doesn\'t have any Lists yet.\n\tTry another board next time!");
+                            }
+                        }
+                    }
+                    else
+                        fprintf(stderr, "Wrong index! Input range is [1 - %llu]", session.boards->length);
                     break;
                 case 0:
                     CLEAR_SCREEN();

@@ -206,6 +206,23 @@ string Priority_toString(Priority priority)
                                          : "Unknown!");
 }
 
+short Task_displace(Task *task, TaskList *distionationList, List *tasksOfSourceList)
+{
+    // List *sourceTasksOfThisTaskList = 
+    ListItem *taskItem = List_unlinkItem(tasksOfSourceList, task);
+    task->taskList = distionationList;
+    List *tasksOfDestinationList = getTasks(distionationList);
+    // List_add(tasksOfDestinationList, task);
+    tasksOfDestinationList->last->next = taskItem;
+    taskItem->prev = tasksOfDestinationList->last;
+    tasksOfDestinationList->last = taskItem;
+    tasksOfDestinationList->length++;
+    tasksOfDestinationList->last->next = NULL;
+    Tasks_save(tasksOfDestinationList, distionationList->id);
+
+    // TODO: Free memory
+}
+
 void Task_print(Task *task)
 {
     printf("Your selected Task:\n\n    Id%9s\t\tPriority\t\tDeadline%2s\t\tTitle\n", " ", " ");
