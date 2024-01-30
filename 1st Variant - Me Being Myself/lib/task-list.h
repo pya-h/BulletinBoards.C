@@ -19,6 +19,8 @@
     // prototypes:
     TaskList *newTaskList();
     TaskList *createTaskList(Board *, char []);
+    List *getTaskListsIds(Board *);
+    FILE *startReadingTaskListsFileData(Long containerBoardId);
     List *getTaskLists(Board *);
     short TaskLists_save(List *, Long);
     short TaskLists_delete(List *, TaskList *);

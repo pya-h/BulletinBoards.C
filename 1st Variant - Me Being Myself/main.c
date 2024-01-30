@@ -48,7 +48,7 @@ int main()
 
                     if (!session.boards->length)
                     {
-                        fprintf(stderr, "No boards created yet.");
+                        fprintf(stderr, "No boards created yet.\n");
                         break;
                     }
                     selectedItemIndex = selectCollectionInterface(session.boards, COLLECTION_TYPE_BOARD); // menu items are started at 1
@@ -103,64 +103,105 @@ int main()
                     }
                     break;
                     case MENU_OPTION_DELETE:
-                        printf("Board that you intend to delete:\n");
                         Board_print(selectedBoard);
                         PRINT_DASH_ROW();
                         if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
                             break;
-                        char relatedTasksFile[MAX_FILENAME_LENGTH] = {'\0'};
-                        List *junkTaskists = getTaskLists(selectedBoard);
-                        Long listsDeleted = 0;
-                        for (Long i = junkTaskists->length - 1; i >= 0; i--)
+
+                        List *l = getTaskListsIds(selectedBoard);
+                        for(Long i = 0; i < l->length; i++)
                         {
-                            TaskList *tl = (TaskList *)List_at(junkTaskists, i);
-                            printf("Deleting List#%llu Tasks.\n", tl->id);
-                            SET_DATA_FILE(relatedTasksFile, FOLDER_TASKS, tl->id);
-                            if(fileExists(relatedTasksFile) && remove(relatedTasksFile)) // remove the task file to delete all of this list tasks.
-                                listsDeleted++;                                                                 // use this return folderr counting removed lists ncount
-                            List_deleteByIndex(junkTaskists, i);                             // free memory
+                            Long x = *((Long*)List_at(l, i));
+                            printf("%llu - %llu\n", i, x);
+                        }
+                        PRESS_KEY_TO_CONTINUE();
+                        char boardRelatedFile[MAX_FILENAME_LENGTH] = {'\0'}; // List and task files address that are related to this board
+                        printf("Starting ...\n");
+                        List *junkTaskLists = getTaskLists(selectedBoard);
+                        printf("Got %llu lists successfully\n.", junkTaskLists->length);
+                        Long listsDeleted = 0;
+                        if (junkTaskLists->length > 0) // As Long is unsigned, This check is necessary
+                        {                              // because when the board doesnt have any Lists, ->length - 1 will causes "OVERFLOW" and the loop runs unexpectedly
+                            for (Long i = junkTaskLists->length - 1; i >= 0; i--)
+                            {
+                                PRINT_DASH_ROW();
+                                printf("removing #%llu index, id=.", i);
+                                TaskList *tl = (TaskList *)List_at(junkTaskLists, i);
+                                printf("%llu\n", tl->id);
+                                printf("Deleting List#%llu Tasks.\n", tl->id);
+                                SET_DATA_FILE(boardRelatedFile, FOLDER_LISTS, tl->id);
+                                printf("Got list file address: %s.\n", boardRelatedFile);
+                                if (fileExists(boardRelatedFile)) // remove the task file to delete all of this list tasks.
+                                    if (!remove(boardRelatedFile))
+                                        listsDeleted++;
+                                    else
+                                        printf("Removing so called existing file failed!\n"); // use this return folderr counting removed lists ncount
+                                List_deleteByIndex(junkTaskLists, i);                         // free memory
+                            }
                         }
                         PRINT_DASH_ROW();
+                        printf("All existing task list files removed.\n");
+                        free(junkTaskLists);
+                        printf("JunkFile memory freed.\n");
+                        junkTaskLists = NULL;
 
-                        free(junkTaskists);
-                        junkTaskists = NULL;
-
-                        printf("Total Lists Deleted: %llu", listsDeleted);
-                        // If file remove was ok, then only removing it from  memory finishes the job. Non if it's tasks are loaded in memory yet
-                        if (List_deleteByItemData(session.boards, selectedBoard))
-                        // if deleted and freed
+                        // Delete the lists File of this board, Which contains all lists [that have been added to this board] data 
+                        // which is saved under the name of this board Id in the FOLDER_DATA/FOLDER_LISTS
+                        SET_DATA_FILE(boardRelatedFile, FOLDER_LISTS, selectedBoard->id);
+                        printf("Board List File:%s ...\n", boardRelatedFile);
+                        if (fileExists(boardRelatedFile) && remove(boardRelatedFile)) // remove the task file to delete all of this list tasks.
                         {
-                            printf("List successfully deleted.\n");
-                            session.currentTask = NULL;
-                            session.currentBoard = NULL;
-                            session.currentList = NULL;
-                            selectedBoard = NULL;
+                            // 'remove' returns no-zero in case of an eror happened
+                            Board_failure(selectedBoard, 
+                                "Deleting this board was unsuccessful. It may be because my resources,\n\t are in use by other apps. Check if you haven\'t open any of my files.");
                         }
                         else
                         {
-                            Board_failure(selectedBoard, "Fatal Error: Board not found in task list. Something has gone wrong in the app. Try reloading this app.");
-                        }
+                            printf("Total Lists Deleted: %llu", listsDeleted);
+                            // If file remove was ok, then only removing it from  memory finishes the job. Non if it's tasks are loaded in memory yet
 
-                        if (!selectedBoard && Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
-                        {
-                            printf("\nDeletion successfully completed!\n");
-                        }
-                        else
-                        {
-                            // error happened while saving
-                            session.error = Board_getError(selectedBoard);
-                            if (session.error == NULL)
-                                session.error = List_getError(session.lists);
-                        }
+                            if (List_deleteByItemData(session.boards, selectedBoard)) // now remove the board itself from memory
+                            // then by Saving memory data to files, automatically removes that data from this user boards file too.
+                            {
+                                printf("Board successfully deleted.\n");
+                                session.currentTask = NULL;
+                                session.currentBoard = NULL;
+                                session.currentList = NULL;
+                                selectedBoard = NULL;
+                                printf("Resetting session  current pointers done.\n");
+                            }
+                            else
+                            {
+                                Board_failure(selectedBoard, "Fatal Error: Board not found in task list. Something has gone wrong in the app. Try reloading this app.");
+                            }
 
+                            if (!selectedBoard && Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
+                            { // if removing from memory was ok, save the memory data in order to remove that data from board file too
+                                printf("\nDeletion successfully completed!\n");
+                            }
+                            else
+                            {
+                                // error happened while saving
+                                session.error = Board_getError(selectedBoard);
+                                if (session.error == NULL)
+                                    session.error = List_getError(session.lists);
+                            }
+                        }
                         break;
-                    }
+                    } // end of view/delete/modfy switch
                     if (session.error)
                     {
                         fprintf(stderr, "%s", session.error);
                     }
-                    break; // close the app.
-                }
+                    break;
+                case MENU_OPTION_GOBACK:
+                    if (areYouSure("Closing Me"))
+                    {
+                        printf("Hope you come back soon ...");
+                        return 0; // exit main function and the application
+                    }
+                    break;
+                } // end of boards menu switch
             }
             else if (!session.currentList)
             {
@@ -197,7 +238,7 @@ int main()
                     }
                     if (!session.lists->length)
                     {
-                        fprintf(stderr, "No Lists have been added to this board yet.");
+                        fprintf(stderr, "No Lists have been added to this board yet.\n");
                         break;
                     }
                     selectedItemIndex = selectCollectionInterface(session.lists, COLLECTION_TYPE_LIST); // menu items are started at 1
@@ -260,7 +301,7 @@ int main()
                         if (!areYouSure("Deleting this List?\n**Warning: Every Task inside this List will be cleared too.!"))
                             break;
                         // User pressed Y = User is sure
-                        // First remove List file, to see if its possible
+                        // First remove This list tasks file, to see if its possible
                         char relatedTasksFile[MAX_FILENAME_LENGTH] = {'\0'};
                         SET_DATA_FILE(relatedTasksFile, FOLDER_TASKS, selectedTaskList->id);
                         if (fileExists(relatedTasksFile) && remove(relatedTasksFile)) // remove the task file to delete all of this list tasks.
@@ -295,7 +336,7 @@ int main()
                                 session.error = List_getError(session.lists);
                         }
                         break;
-                    }
+                    } // End of select list switch
 
                     if (session.error)
                     {
@@ -350,7 +391,7 @@ int main()
                     }
                     if (!session.tasks->length)
                     {
-                        fprintf(stderr, "No Tasks have been added to this list yet.");
+                        fprintf(stderr, "No Tasks have been added to this list yet.\n");
                         break;
                     }
                     selectedItemIndex = selectCollectionInterface(session.tasks, COLLECTION_TYPE_TASK); // menu items are started at 1

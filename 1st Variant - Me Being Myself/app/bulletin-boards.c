@@ -54,10 +54,10 @@ MenuOption boardsMenu()
     MenuOption option;
     printf("\nWhat do you want to do now?\n");
     PRINT_DASH_ROW();
-    printf("\t%d\tView Boards\n\t%d\tCreate New Board\n\t%d\tModify Board Title\n\t%d\tDelete Board ",
-           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY, MENU_OPTION_DELETE);
+    printf("\t%d\tView Boards\n\t%d\tCreate New Board\n\t%d\tModify Board Title\n\t%d\tDelete Board\n\t%d\tQuit",
+           MENU_OPTION_VIEW, MENU_OPTION_CREATE, MENU_OPTION_MODIFY, MENU_OPTION_DELETE, MENU_OPTION_GOBACK);
     while ((option = GET_MENU_OPTION()) != MENU_OPTION_CREATE && option != MENU_OPTION_DELETE &&
-           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW) ; //get input until its valid
+           option != MENU_OPTION_MODIFY && option != MENU_OPTION_VIEW && option != MENU_OPTION_GOBACK) ; //get input until its valid
 
     puts("\n");
     return option;

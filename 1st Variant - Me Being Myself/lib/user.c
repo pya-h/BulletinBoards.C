@@ -18,7 +18,7 @@ User *newUser()
     return user;
 }
 
-void User_failure(User *user, string msg) 
+void User_failure(User *user, string msg)
 {
     User_reset(user);
     sprintf(user->error, "Operation Failure:\n\t%s\n", msg);
@@ -35,7 +35,8 @@ User *registerUser(char username[], char password[])
     {
         // time returned successfully
         string valiationResult = validateRegisterationInput(username, password);
-        if(valiationResult) {
+        if (valiationResult)
+        {
             User_failure(user, valiationResult);
             return user;
         }
@@ -43,7 +44,7 @@ User *registerUser(char username[], char password[])
         strncpy(user->name, username, MAX_USERNAME_LENGTH);
         // Save credentials into a file
         SET_USER_DATA_FILE(user->location, FOLDER_USERS, user->name);
-        if(fileExists(user->location))
+        if (fileExists(user->location))
         {
             User_failure(user, "The username is taken before!");
             return user;
@@ -86,29 +87,34 @@ User *loginUser(char username[], char password[])
         // if the user exists
         string row = String(MAX_USER_FILE_ROW_LENGTH);
 
-        if (!feof(userFile) && fgets(row, MAX_USER_FILE_ROW_LENGTH, userFile) != NULL // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
+        if (!feof(userFile) && fgets(row, MAX_USER_FILE_ROW_LENGTH, userFile) != NULL     // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
             && !feof(userFile) && fgets(row, MAX_USER_FILE_ROW_LENGTH, userFile) != NULL) // reading the actual line that contains the credentials and id
-        { 
+        {
             removeNextlineCharacter(row);
             // the second call to fgets will read the credential line
-            const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
+            const string id = (string)strtok(row, COLUMN_DELIMITER);    // split the text by COLUMN_DELIMITER[,] character
             string credential = (string)strtok(NULL, COLUMN_DELIMITER); // get the next column
             credential = trimColumnValue(credential);
 
             if (id != NULL && !strcmp(encodeString(password), credential))
             {
-                user->id = atol(id);
-                // if passwords are equal then login
-                user->loggedIn = 1;
-                fclose(userFile);
-                return user;
+                string conversionError;
+                user->id = strtoull(id, &conversionError, 10);
+
+                if (!*conversionError && user->id)
+                {
+                    // if passwords are equal then login
+                    user->loggedIn = 1;
+                    fclose(userFile);
+                    return user;
+                }
             }
         }
         fclose(userFile);
     }
 
     User_failure(user, "Username or password is wrong! Please try again ..."); // identifier of error is an empty user
-    
+
     // else user will remain logged out ...
     // close the file
     _fcloseall();
@@ -124,14 +130,13 @@ string validateRegisterationInput(char inputUser[], char inputPassword[])
 string User_getError(User *user)
 {
 
-    if(user && user->error[0])
+    if (user && user->error[0])
         // if error string is not empty, return it directly
         return user->error;
-    if(!user)
+    if (!user)
         return "An UnknownError detected. Trying to restart the app may help resolve or identify the issue ...";
-    
-    if(!user->id || !user->location)
+
+    if (!user->id || !user->location)
         return "An UnknownError detected and it appears to be related to database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
-
 }

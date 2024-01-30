@@ -104,9 +104,11 @@ List *getBoards(Long ownerId)
             // each board occupies to lines
             // first line is its id and the second is the title
             strncpy(nextBoard->title, title, MAX_TITLE_LENGTH);
-            nextBoard->id = atol(id); // convert read id to Long
+            string conversionError;
+            nextBoard->id = strtoull(id, &conversionError, 10); // convert read id to Long
+            
             nextBoard->ownerId = ownerId;
-            if (!nextBoard->id)
+            if (!nextBoard->id || *conversionError)
             {
                 Board_failure(nextBoard, "Could not read the id property of this board successfully!");
                 continue; // set the error message of this one and continue reading the next one (cause the file is not ended yet.)
@@ -167,7 +169,7 @@ string Board_getError(Board *board)
 
 void Board_print(Board *board)
 {
-    printf("Your selected board is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
+    printf("Board you selected:\n\n  Id%6s\t\tOwnerId%4s\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
     printf("%10llu\t\t%10llu\t\t%s\n", board->id, board->ownerId, board->title);
 }

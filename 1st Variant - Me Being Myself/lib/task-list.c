@@ -72,19 +72,14 @@ List *getTaskLists(Board *containerBoard)
 {
     // read all the task list from the file
     List *taskLists = newList();
-    char taskListsFilename[MAX_FILENAME_LENGTH] = {'\0'};
-    SET_DATA_FILE(taskListsFilename, FOLDER_LISTS, containerBoard->id); // now taskListsFile contains the address of the board file that contains desired user board list ata.
-    FILE *taskListsFile = fopen(taskListsFilename, "r");
-    if (!taskListsFile)
-    {
-        _fcloseall();
-        return taskLists; // user has not create any board; but a empty list will be sent back to caller, so that the user can add items in the future
-    }
     TaskList *nextTaskList = newTaskList(); // this is used to read each board data
     string row = String(MAX_LIST_FILE_ROW_LENGTH);
-    if (!feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile) != NULL)
-    { // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
-        for (; !feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile) != NULL; nextTaskList = newTaskList())
+
+    FILE *taskListsFile = startReadingTaskListsFileData(containerBoard->id);
+    if (taskListsFile)
+    {
+
+        for (; !feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile); nextTaskList = newTaskList())
         {
             removeNextlineCharacter(row);
             // the second call to fgets will read the credential line
@@ -93,7 +88,8 @@ List *getTaskLists(Board *containerBoard)
             const string ownerId = (string)strtok(NULL, COLUMN_DELIMITER); // the ownerId is also in containerBoatd->id
             // this one is used just to check values are correct
             title = trimColumnValue(title);
-            if (!id || !title || !ownerId || atol(ownerId) != containerBoard->ownerId)
+            string conversionError;
+            if (!id || !title || !ownerId || strtoull(ownerId, &conversionError, 10) != containerBoard->ownerId)
             {
                 if (!feof(taskListsFile)) // if file is not ended and this condition happended, then the data of this board is corrupted
                     TaskList_failure(nextTaskList, "It seems the data related to this list is corrupted or modified!");
@@ -103,9 +99,9 @@ List *getTaskLists(Board *containerBoard)
             // each task list occupies to lines
             // first line is its id and the second is the title
             strncpy(nextTaskList->title, title, MAX_TITLE_LENGTH);
-            nextTaskList->id = atol(id); // convert read id to Long
+            nextTaskList->id = strtoull(id, &conversionError, 10); // convert read id to Long
             nextTaskList->board = containerBoard;
-            if (!nextTaskList->id)
+            if (!nextTaskList->id || *conversionError)
             {
                 TaskList_failure(nextTaskList, "Could not read the id property of this board successfully!");
                 continue; // set the error message of this one and continue reading the next one (cause the file is not ended yet.)
@@ -117,10 +113,64 @@ List *getTaskLists(Board *containerBoard)
             List_add(taskLists, nextTaskList);
         }
     }
+
     free(nextTaskList); // at last step of for, a new empty task list is allocated that is not needed
 
     fclose(taskListsFile);
     return taskLists;
+}
+FILE *startReadingTaskListsFileData(Long containerBoardId) // open taskLists file and skip first row(header of the file)
+{
+    char taskListsFilename[MAX_FILENAME_LENGTH] = {'\0'};
+    SET_DATA_FILE(taskListsFilename, FOLDER_LISTS, containerBoardId); // now taskListsFile contains the address of the board file that contains desired user board list ata.
+    FILE *taskListsFile = fopen(taskListsFilename, "r");
+    if (!taskListsFile)
+    {
+        _fcloseall();
+        return NULL; // user has not create any board; but a empty list will be sent back to caller, so that the user can add items in the future
+    }
+    // the first row are headers(titles); also its a good practice to check that as an insurance that file data is stored correctly.
+    if (feof(taskListsFile) || !fgets(taskListsFilename, MAX_LIST_FILE_ROW_LENGTH, taskListsFile))
+        return NULL; // if file doesnt have header then its empty, so the function may return NULL, to prevent caller to continue reading file.
+    // taskListsFilename is used as temp string for reading the header of the file
+    // because reading the header sectionof csv file is repetetive, we have added it to this function
+    return taskListsFile; // if file opened successfully and contains actual data, then return the file pointer
+}
+
+List *getTaskListsIds(Board *containerBoard)
+{
+    // read all the task list from the file
+    List *taskListIds = newList(); // a List of long pointer, that contain the Ids of a board lists
+    // because the 'data' field in our link list is of type (void*), we cannot sav the actual long values in list
+    // and we should use the address of them
+    string row = String(MAX_LIST_FILE_ROW_LENGTH); // this row data is just for skipping everything except Ids
+    FILE *taskListsFile = startReadingTaskListsFileData(containerBoard->id);
+    Long listId;
+    if (taskListsFile)
+    {
+
+        while (!feof(taskListsFile) && fgets(row, MAX_LIST_FILE_ROW_LENGTH, taskListsFile))
+        {
+            removeNextlineCharacter(row);
+            // the second call to fgets will read the credential line
+            const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
+            string conversionError;
+            listId = strtoull(id, &conversionError, 10); // convert string to Long(unsigned long long)
+            // skip other columns, go to next row for reading next id
+            // this one is used just to check values are correct
+            if (!id || !listId || *conversionError)
+            {
+                if (!feof(taskListsFile)) // if file is not ended and this condition happended, then the data of this board is corrupted
+                    List_failure(taskListIds,
+                                 "It seems the data related some of this list rows are corrupted or modified! These data have been skipped while reading");
+                continue;
+            }
+            List_add(taskListIds, &listId); // add long pointer to the list
+        }
+    }
+
+    fclose(taskListsFile);
+    return taskListIds;
 }
 
 short TaskLists_save(List *taskLists, Long containerBoardId)
@@ -172,7 +222,7 @@ void TaskList_failure(TaskList *taskList, string msg)
 
 void TaskList_print(TaskList *taskList)
 {
-    printf("Your selected List is as below:\n\n  Id%6s\t\tOwnerId%4s\t\tBoardId%4s\t\tTitle\n", " ", " ", " ");
+    printf("Your selected List is as below:\n\n    Id%9s\t\tCurrent BoardId\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
-    printf("%10llu\t\t%10llu\t\t%10llu\t\t%s\n", taskList->id, taskList->board->ownerId, taskList->board->id, taskList->title);
+    printf("%15llu\t\t%15llu\t\t%s\n", taskList->id, taskList->board->id, taskList->title);
 }

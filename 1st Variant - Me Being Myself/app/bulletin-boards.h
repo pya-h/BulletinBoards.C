@@ -30,6 +30,7 @@
         MENU_OPTION_CREATE = (char)2,
         MENU_OPTION_MODIFY = (char)3,
         MENU_OPTION_DELETE = (char)4,
+        MENU_OPTION_QUIT = (char)5,
         MENU_OPTION_GOBACK = (char)0
     } MenuOption;
 
