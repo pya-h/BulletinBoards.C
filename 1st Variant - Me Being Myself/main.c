@@ -111,13 +111,12 @@ int main()
                         List *listIds = getTaskListsIds(selectedBoard); // with this list we findout wich task files should be deleted
 
                         char boardRelatedFile[MAX_FILENAME_LENGTH] = {'\0'}; // List and task files address that are related to this board
-                        printf("Got %llu lists successfully\n.", listIds->length);
-                        Long listsDeleted = 0;
                         if (listIds->length > 0) // As Long is unsigned, This check is necessary
                         {                        // because when the board doesnt have any Lists, ->length - 1 will causes "OVERFLOW" and the loop runs unexpectedly
-                            for (Long i = listIds->length - 1; i >= 0; i--)
+                            while (listIds->length > 0)
                             {
-                                Long taskFileNameIdentifier = *((Long *)List_at(listIds, i)); // each item of the listIds list is a TaskListId
+                                Long taskFileNameIdentifier = *((Long *)List_at(listIds, 0)); // delete the first item until no item is left
+                                 // each item of the listIds list is a TaskListId
                                 // by TaskListId we delete the task file related to this board
 
                                 SET_DATA_FILE(boardRelatedFile, FOLDER_TASKS, taskFileNameIdentifier);
@@ -126,7 +125,7 @@ int main()
                                         printf("List #%llu Tasks deleted.\n", taskFileNameIdentifier);
                                     else
                                         printf("Deleting List #%llu tasks failed!\n", taskFileNameIdentifier);
-                                List_deleteByIndex(listIds, i); // free memory used for each Long pointer
+                                List_deleteByIndex(listIds, 0); // free memory used for each Long pointer
                             }
                         }
                         PRINT_DASH_ROW();
@@ -149,7 +148,7 @@ int main()
                         else
                         {
                             // If file remove was ok, then only removing it from  memory finishes the job. Non if it's tasks are loaded in memory yet
-                            printf("Board %llu Lists deleted.", selectedBoard->id);
+                            printf("Board %llu Lists deleted.\n", selectedBoard->id);
                             if (List_deleteByItemData(session.boards, selectedBoard)) // now remove the board itself from memory
                             // then by Saving memory data to files, automatically removes that data from this user boards file too.
                             {
