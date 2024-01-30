@@ -42,7 +42,7 @@
     #define ABS(x) x >= 0 ? x : x * -1
     #define DIFF(x, y) ABS(x - y)
     
-    typedef long long Long; // long long(8 bytes) is different from 'long'(4 bytes); we use long long to make sure our IDs and indices are always in range.
+    typedef unsigned long long Long; // long long(8 bytes) is different from 'long'(4 bytes); we use long long to make sure our IDs and indices are always in range.
     // Long is just shortcut for long long
 
     Long MIN(const Long a, const Long b);

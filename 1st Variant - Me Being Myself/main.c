@@ -37,7 +37,7 @@ int main()
                 break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
-                case MENU_OPTION_DELETE:
+                case MENU_OPTION_DELETE: // each of these cases have Selecting the board part in Common.
                     session.error = List_getError(session.boards);
                     if (session.error)
                     {
@@ -108,6 +108,50 @@ int main()
                         PRINT_DASH_ROW();
                         if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
                             break;
+                        char relatedTasksFile[MAX_FILENAME_LENGTH] = {'\0'};
+                        List *junkTaskists = getTaskLists(selectedBoard);
+                        Long listsDeleted = 0;
+                        for (Long i = junkTaskists->length - 1; i >= 0; i--)
+                        {
+                            TaskList *tl = (TaskList *)List_at(junkTaskists, i);
+                            printf("Deleting List#%llu Tasks.\n", tl->id);
+                            SET_DATA_FILE(relatedTasksFile, FOLDER_TASKS, tl->id);
+                            if(fileExists(relatedTasksFile) && remove(relatedTasksFile)) // remove the task file to delete all of this list tasks.
+                                listsDeleted++;                                                                 // use this return folderr counting removed lists ncount
+                            List_deleteByIndex(junkTaskists, i);                             // free memory
+                        }
+                        PRINT_DASH_ROW();
+
+                        free(junkTaskists);
+                        junkTaskists = NULL;
+
+                        printf("Total Lists Deleted: %llu", listsDeleted);
+                        // If file remove was ok, then only removing it from  memory finishes the job. Non if it's tasks are loaded in memory yet
+                        if (List_deleteByItemData(session.boards, selectedBoard))
+                        // if deleted and freed
+                        {
+                            printf("List successfully deleted.\n");
+                            session.currentTask = NULL;
+                            session.currentBoard = NULL;
+                            session.currentList = NULL;
+                            selectedBoard = NULL;
+                        }
+                        else
+                        {
+                            Board_failure(selectedBoard, "Fatal Error: Board not found in task list. Something has gone wrong in the app. Try reloading this app.");
+                        }
+
+                        if (!selectedBoard && Boards_save(session.boards, session.user->id)) // if the function returns 1 it means everything successfully worked out.
+                        {
+                            printf("\nDeletion successfully completed!\n");
+                        }
+                        else
+                        {
+                            // error happened while saving
+                            session.error = Board_getError(selectedBoard);
+                            if (session.error == NULL)
+                                session.error = List_getError(session.lists);
+                        }
 
                         break;
                     }
@@ -143,7 +187,7 @@ int main()
                 break;
                 case MENU_OPTION_VIEW:
                 case MENU_OPTION_MODIFY:
-                case MENU_OPTION_DELETE:
+                case MENU_OPTION_DELETE: // each of these options have a part in Common: Selecting hte list first
                     session.error = List_getError(session.lists);
                     if (session.error)
                     {
@@ -213,15 +257,49 @@ int main()
                         printf("Board that you intend to delete:\n");
                         TaskList_print(selectedTaskList);
                         PRINT_DASH_ROW();
-                        if (!areYouSure("Deleting this board?\n**Warning: Everything related to this board will be cleared too, such as the lists on this board, and the Tasks on these lists! "))
+                        if (!areYouSure("Deleting this List?\n**Warning: Every Task inside this List will be cleared too.!"))
                             break;
-
+                        // User pressed Y = User is sure
+                        // First remove List file, to see if its possible
+                        char relatedTasksFile[MAX_FILENAME_LENGTH] = {'\0'};
+                        SET_DATA_FILE(relatedTasksFile, FOLDER_TASKS, selectedTaskList->id);
+                        if (fileExists(relatedTasksFile) && remove(relatedTasksFile)) // remove the task file to delete all of this list tasks.
+                        {
+                            // remove returns no-zero in case of an eeror happened
+                            TaskList_failure(selectedTaskList, "Deleting this list was unsuccessful. It may be because my resources,\n\t are in use by other apps. Check if you haven\'t open any of my files.");
+                        }
+                        else
+                        {
+                            // If file remove was ok, then only removing it from  memory finishes the job. Non if it's tasks are loaded in memory yet
+                            if (List_deleteByItemData(session.lists, selectedTaskList))
+                            {
+                                printf("List successfully deleted.\n");
+                                session.currentTask = NULL;
+                                session.currentList = NULL;
+                                selectedTaskList = NULL;
+                            }
+                            else
+                            {
+                                TaskList_failure(selectedTaskList, "List not found in task list. Something has gone wrong in the app. Try reloading this app.");
+                            }
+                        }
+                        if (!selectedTaskList && TaskLists_save(session.lists, session.currentBoard->id)) // if the function returns 1 it means everything successfully worked out.
+                        {
+                            printf("\nDeletion successfully completed!\n");
+                        }
+                        else
+                        {
+                            // error happened while saving
+                            session.error = TaskList_getError(selectedTaskList);
+                            if (session.error == NULL)
+                                session.error = List_getError(session.lists);
+                        }
                         break;
                     }
 
                     if (session.error)
                     {
-                        fprintf(stderr, "%s", session.error);
+                        fprintf(stderr, "Operation Failure: %s", session.error);
                     }
                     break; // close the app.
                 case MENU_OPTION_GOBACK:
@@ -321,6 +399,7 @@ int main()
                 while ((taskOption = GET_MENU_OPTION()) < 0 || taskOption > 4)
                     ;
                 PRINT_DASH_ROW();
+                short anythingChanged = 0;
                 switch (taskOption)
                 {
                 case 1: // change title
@@ -330,7 +409,7 @@ int main()
                         break;
                     PRINT_DASH_ROW();
                     getLine(session.currentTask->title, "\tTitle:\t");
-
+                    anythingChanged = 1;
                     break;
 
                 case 2:
@@ -342,12 +421,14 @@ int main()
                         break;
                     PRINT_DASH_ROW();
                     getLine(newDeadline, "Date (as Y-M-D): ");
+
                     if (sscanf(newDeadline, "%d-%d-%d", &(session.currentTask->deadline.tm_year), &(session.currentTask->deadline.tm_mon), &(session.currentTask->deadline.tm_mday)) != 3)
                     {
                         char err[MAX_RESPONSE_LENGTH] = {'\0'};
                         sprintf(err, "Deadline is in wrong format! You must\'ve entered it in this format: Year-Month-Day", MAX_RESPONSE_LENGTH);
                         Task_failure(session.currentTask, err);
                     }
+                    anythingChanged = 1;
                     break;
                 }
                 case 3: // change priority
@@ -360,20 +441,26 @@ int main()
                         cPriority = TO_UPPER(cPriority); // convert lower case character to upper
                         session.currentTask->priority = cPriority;
                     } while (session.currentTask->priority != HIGH && session.currentTask->priority != MEDIUM && session.currentTask->priority != LOW); // get priority until a valid value is received!
+                    anythingChanged = 1;
                     break;
                 }
                 case 4: // delete task
-                    printf("Board that you intend to delete:\n");
+                    printf("Task that you intend to delete:\n");
                     PRINT_DASH_ROW();
                     if (!areYouSure("Deleting this Task "))
                         break;
-                    if (Tasks_delete(session.tasks, session.currentTask))
+                    if (List_deleteByItemData(session.tasks, session.currentTask))
                     {
                         printf("Task successfully deleted.\n");
                         session.currentTask = NULL;
+                        anythingChanged = 1;
                     }
                     else
-                        printf("Cannot delete this task, Please try again later.\n");
+                    {
+                        Task_failure(session.currentTask, "Task not found in task list. Something has gone wrong in the app. Try reloading this app.");
+                        if (session.error == NULL)
+                            session.error = List_getError(session.tasks);
+                    }
 
                     break;
                 case 5:
@@ -390,7 +477,8 @@ int main()
 
                 if (!session.error && Tasks_save(session.tasks, session.currentList->id)) // if the function returns 1 it means everything successfully worked out.
                 {
-                    printf("\nChanges saved successfully.\n");
+                    if (anythingChanged)
+                        printf("\nChanges saved successfully.\n");
                 }
                 else
                 {

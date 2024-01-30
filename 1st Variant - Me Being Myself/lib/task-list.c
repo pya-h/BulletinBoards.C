@@ -70,7 +70,7 @@ TaskList *createTaskList(Board *containerBoard, char title[])
 
 List *getTaskLists(Board *containerBoard)
 {
-        // read all the task list from the file
+    // read all the task list from the file
     List *taskLists = newList();
     char taskListsFilename[MAX_FILENAME_LENGTH] = {'\0'};
     SET_DATA_FILE(taskListsFilename, FOLDER_LISTS, containerBoard->id); // now taskListsFile contains the address of the board file that contains desired user board list ata.
@@ -88,8 +88,8 @@ List *getTaskLists(Board *containerBoard)
         {
             removeNextlineCharacter(row);
             // the second call to fgets will read the credential line
-            const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
-            string title = (string)strtok(NULL, COLUMN_DELIMITER);   // get the next column
+            const string id = (string)strtok(row, COLUMN_DELIMITER);       // split the text by COLUMN_DELIMITER[,] character
+            string title = (string)strtok(NULL, COLUMN_DELIMITER);         // get the next column
             const string ownerId = (string)strtok(NULL, COLUMN_DELIMITER); // the ownerId is also in containerBoatd->id
             // this one is used just to check values are correct
             title = trimColumnValue(title);
@@ -140,12 +140,12 @@ short TaskLists_save(List *taskLists, Long containerBoardId)
         return 0; // error happend
     }
     fprintf(taskListFile, "Id%sList Title%sOwner Id\n", COLUMN_DELIMITER, COLUMN_DELIMITER);
-    
+
     for (Long i = 0; i < taskLists->length; i++)
     {
         taskList = (TaskList *)List_at(taskLists, i);
         fprintf(taskListFile, "%llu%s\"%s\"%s%llu\n", taskList->id, COLUMN_DELIMITER, taskList->title,
-                    COLUMN_DELIMITER, taskList->board->ownerId);
+                COLUMN_DELIMITER, taskList->board->ownerId);
     }
     fclose(taskListFile);
     return 1;
@@ -153,13 +153,13 @@ short TaskLists_save(List *taskLists, Long containerBoardId)
 
 string TaskList_getError(TaskList *taskList)
 {
-    if(taskList && taskList->error[0])
+    if (taskList && taskList->error[0])
         // if error string is not empty, return it directly
         return taskList->error;
-    if(!taskList)
+    if (!taskList)
         return "An UnknownError detected. Trying to restart the app may help resolve or identify the issue ...";
-    
-    if(!taskList->id || !taskList->board || !taskList->board->id)
+
+    if (!taskList->id || !taskList->board || !taskList->board->id)
         return "An UnknownError detected and it appears to be related to lists database.\n\tTrying to restart the app may help resolve or identify the issue ...\n";
     return NULL;
 }

@@ -4,6 +4,7 @@
     #include "link-list.h"
     #include "board.h"
     #define FOLDER_LISTS "Lists"
+
     #define MAX_LIST_FILE_ROW_LENGTH MAX_TITLE_LENGTH + MAX_LONG_NUMBER_LENGTH*2 + 10 // 50 as the length of id, ownerId and some extra characters such as comma(delimiter) or double quatation
 
     typedef struct TaskList
@@ -20,6 +21,7 @@
     TaskList *createTaskList(Board *, char []);
     List *getTaskLists(Board *);
     short TaskLists_save(List *, Long);
+    short TaskLists_delete(List *, TaskList *);
     string TaskList_getError(TaskList *);
     void TaskList_reset(TaskList *);
     void TaskList_failure(TaskList *, string);
