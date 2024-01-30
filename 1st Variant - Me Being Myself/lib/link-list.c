@@ -185,17 +185,39 @@ short List_deleteByItemData(List *list, void *dataDump)
     return 0;                                           // task not found
 }
 
-ListItem * List_unlinkItem(List *list, void *data)
+ListItem *List_unlinkItem(List *list, void *data)
 {
     ListItem *li;
-    for(li = list->first; li != NULL && li->data != data; li = li->next)
+    for (li = list->first; li != NULL && li->data != data; li = li->next)
+        ;
 
-    if(li != NULL)
+    if (li != NULL)
     {
-        li->next->prev = li->prev;
-        li->prev->next = li->next;
+        if (li == list->first)
+        {
+            if (list->length == 1)
+            {
+                // if the list has only one element:
+                List_reset(list);
+            }
+            else
+            {
+
+                list->first = list->first->next;
+                list->first->prev = NULL;
+            }
+        }
+        else if (li == list->last)
+        {
+            list->last = list->last->prev;
+            list->last->next = NULL;
+        }
+        else
+        {
+            li->next->prev = li->prev;
+            li->prev->next = li->next;
+        }
         list->length--;
     }
     return li;
-
 }

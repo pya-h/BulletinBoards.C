@@ -208,16 +208,24 @@ string Priority_toString(Priority priority)
 
 short Task_displace(Task *task, TaskList *distionationList, List *tasksOfSourceList)
 {
-    // List *sourceTasksOfThisTaskList = 
-    ListItem *taskItem = List_unlinkItem(tasksOfSourceList, task);
-    task->taskList = distionationList;
+    // List *sourceTasksOfThisTaskList =
+    ListItem *taskItem = List_unlinkItem(tasksOfSourceList, task); // unlink &  extract the task item to link it to another item list
+    task->taskList = distionationList; // declare destinationTaskList as the owner of this task
     List *tasksOfDestinationList = getTasks(distionationList);
     // List_add(tasksOfDestinationList, task);
-    tasksOfDestinationList->last->next = taskItem;
-    taskItem->prev = tasksOfDestinationList->last;
-    tasksOfDestinationList->last = taskItem;
+    if (tasksOfDestinationList->length) { // if note empty
+        tasksOfDestinationList->last->next = taskItem;
+        taskItem->prev = tasksOfDestinationList->last;
+        tasksOfDestinationList->last = taskItem;
+    }
+    else
+    {
+        tasksOfDestinationList->first = tasksOfDestinationList->last = taskItem;
+        tasksOfDestinationList->first->prev = NULL;
+    }
     tasksOfDestinationList->length++;
     tasksOfDestinationList->last->next = NULL;
+    //TaskLists_save(tasksOfSourceList) => saved in main:
     Tasks_save(tasksOfDestinationList, distionationList->id);
 
     // TODO: Free memory

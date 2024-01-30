@@ -46,6 +46,7 @@
     
     Session newSession();
     void initializeData();
+
     // authentication menus
     User *authenticationAttempt(short);
     MenuOption authenticationInterface();

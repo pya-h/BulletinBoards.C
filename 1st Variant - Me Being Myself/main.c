@@ -152,9 +152,13 @@ int main()
                             if (List_deleteByItemData(session.boards, selectedBoard)) // now remove the board itself from memory
                             // then by Saving memory data to files, automatically removes that data from this user boards file too.
                             {
+                                if (session.tasks)
+                                    free(session.tasks);
+                                if (session.lists)
+                                    free(session.lists);
                                 session.currentTask = NULL;
-                                session.currentBoard = NULL;
                                 session.currentList = NULL;
+                                session.currentBoard = NULL;
                                 selectedBoard = NULL;
                                 printf("Board itself and all data related to it, successfully deleted.\n");
                             }
@@ -211,7 +215,7 @@ int main()
                     {
                         fprintf(stderr, session.error);
                     }
-                    session.currentBoard = NULL;
+                    // session.currentBoard = NULL;
                 }
                 break;
                 case MENU_OPTION_VIEW:
@@ -302,9 +306,13 @@ int main()
                             if (List_deleteByItemData(session.lists, selectedTaskList))
                             {
                                 printf("List successfully deleted.\n");
+                                if (session.tasks)
+                                    free(session.tasks);
+                                if (session.currentList)
+                                    free(session.currentList);
                                 session.currentTask = NULL;
                                 session.currentList = NULL;
-                                session.currentBoard = NULL; // go back to boards menu
+                                // session.currentBoard = NULL; // go back to boards menu
                                 selectedTaskList = NULL;
                             }
                             else
@@ -332,9 +340,10 @@ int main()
                     }
                     break; // close the app.
                 case MENU_OPTION_GOBACK:
-                    free(session.lists);
+                    if (session.lists)
+                        free(session.lists);
+                    // session.currentBoard = NULL;
                     session.currentBoard = NULL;
-                    session.currentList = NULL;
                     CLEAR_SCREEN();
                     continue; // immediately go back to boards menu
                 }
@@ -404,7 +413,8 @@ int main()
                     continue;       // continue the loop, so the board will be printed imedately in next if
                     // this case doesnt need break; because of using 'continue'
                 case MENU_OPTION_GOBACK:
-                    free(session.tasks);
+                    if (session.tasks)
+                        free(session.tasks);
                     session.currentList = NULL;
                     CLEAR_SCREEN();
                     continue; // immediately go back to boards menu
@@ -425,7 +435,7 @@ int main()
                 PRINT_DASH_ROW();
                 printf("What do you want to do with this task?\n\t1 Change Title\n\t2 Change Deadline\n\t3 Change Priority\n\t4 Delete\n\t5 Move It To Another List\n\t0 Go Back ");
                 // force valid input
-                while ((taskOption = GET_MENU_OPTION()) < 0 || taskOption > 4)
+                while ((taskOption = GET_MENU_OPTION()) < 0 || taskOption > 5)
                     ;
                 PRINT_DASH_ROW();
                 short anythingChanged = 0;
@@ -481,6 +491,8 @@ int main()
                     if (List_deleteByItemData(session.tasks, session.currentTask))
                     {
                         printf("Task successfully deleted.\n");
+                        if (session.currentTask)
+                            free(session.currentTask);
                         session.currentTask = NULL;
                         anythingChanged = 1;
                     }
@@ -508,7 +520,7 @@ int main()
                         if (destinationBoard != NULL)
                         {
                             List *taskListsOfThisBoard = getTaskLists(destinationBoard);
-                            if (taskListsOfThisBoard->length > 0)
+                            if (taskListsOfThisBoard->length >= 1 || (taskListsOfThisBoard))
                             {
                                 // Now show the Lists of this board
                                 selectedItemIndex = selectCollectionInterface(taskListsOfThisBoard, COLLECTION_TYPE_LIST); // menu items are started at 1
@@ -519,41 +531,65 @@ int main()
                                 }
                                 if (selectedItemIndex >= 1 && selectedItemIndex <= taskListsOfThisBoard->length)
                                 { // TODO: CHECK POSSIBLE ERRORS
-                                    TaskList *destinationTaskList = (TaskList *) List_at(taskListsOfThisBoard, selectedItemIndex - 1);
-                                    
+                                    TaskList *destinationTaskList = (TaskList *)List_at(taskListsOfThisBoard, selectedItemIndex - 1);
+
                                     // now destion is completely selected; time to move the task
                                     Task_displace(session.currentTask, destinationTaskList, session.tasks); // check error
+                                    if (destinationTaskList)
+                                    {
+                                        free(destinationTaskList);
+                                        destinationTaskList = NULL;
+                                    }
+                                    if (session.currentTask)
+                                    {
+                                        // free(session.currentTask);
+                                        session.currentTask = NULL;
+                                    }
                                 }
                                 else
                                 {
                                     fprintf(stderr, "Wrong index! Input range is [1 - %llu]", taskListsOfThisBoard->length);
                                 }
                             }
+                            else if (taskListsOfThisBoard->length == 1)
+                            {
+                                fprintf(stderr, "The selected board have just one List.\n\tTry another board next time!");
+                            }
                             else
                             {
-                                Task_failure(session.currentTask, "The selected board doesn\'t have any Lists yet.\n\tTry another board next time!");
+                                fprintf(stderr, "The selected board doesn\'t have any Lists yet.\n\tTry another board next time!");
                             }
                         }
                     }
+
                     else
                         fprintf(stderr, "Wrong index! Input range is [1 - %llu]", session.boards->length);
                     break;
                 case 0:
                     CLEAR_SCREEN();
-                    session.currentTask = NULL;
+                    if (session.currentTask)
+                    {
+                        free(session.currentTask);
+                        session.currentTask = NULL;
+                    }
                     continue; // go back imediately; as used previously, using continue will prevent the execution of the Press any key section
                 }
                 // save changes
                 if (session.currentTask)
                     session.error = Task_getError(session.currentTask);
+                printf("task dispalce done");
 
-                if (!session.error && Tasks_save(session.tasks, session.currentList->id)) // if the function returns 1 it means everything successfully worked out.
+                if (!session.error && session.currentList && Tasks_save(session.tasks, session.currentList->id)) // if the function returns 1 it means everything successfully worked out.
                 {
+                printf("task dispalce done");
+
                     if (anythingChanged)
                         printf("\nChanges saved successfully.\n");
                 }
                 else
                 {
+                printf("task dispalcexxx done");
+
                     // error happened while saving
                     session.error = List_getError(session.tasks);
                     fprintf(stderr, "Change was unsuccessful: %s", session.error);
