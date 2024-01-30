@@ -39,4 +39,5 @@
     void Task_failure(Task *, string);
     void Task_print(Task *);
     string Priority_toString(Priority);
+    short Task_displace(Task *, TaskList *, List *);
 #endif

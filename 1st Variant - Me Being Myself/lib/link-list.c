@@ -1,6 +1,5 @@
 #include "link-list.h"
 
-
 ListItem *newListItem(void *data)
 {
     ListItem *item = (ListItem *)calloc(1, sizeof(ListItem));
@@ -147,8 +146,6 @@ short List_deleteByIndex(List *list, Long index)
     return 1; // item found and deleted successfully
 }
 
-
-
 string List_getError(List *list)
 {
 
@@ -185,5 +182,20 @@ short List_deleteByItemData(List *list, void *dataDump)
     string error = List_getError(list);
     if (error == NULL && dataDumpIndex >= 0)
         return List_deleteByIndex(list, dataDumpIndex); // if deletion was ok return 1 otherwise 0
-    return 0; // task not found
+    return 0;                                           // task not found
+}
+
+ListItem * List_unlinkItem(List *list, void *data)
+{
+    ListItem *li;
+    for(li = list->first; li != NULL && li->data != data; li = li->next)
+
+    if(li != NULL)
+    {
+        li->next->prev = li->prev;
+        li->prev->next = li->next;
+        list->length--;
+    }
+    return li;
+
 }

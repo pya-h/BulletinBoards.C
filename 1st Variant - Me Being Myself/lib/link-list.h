@@ -40,5 +40,5 @@
     Long List_getIndex(List *, void *);
 
     short List_deleteByItemData(List *, void *);
-   
+    ListItem *List_unlinkItem(List *, void *);
 #endif //LINK_LIST_H
