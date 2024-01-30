@@ -144,8 +144,8 @@ List *getTaskListsIds(Board *containerBoard)
     // because the 'data' field in our link list is of type (void*), we cannot sav the actual long values in list
     // and we should use the address of them
     string row = String(MAX_LIST_FILE_ROW_LENGTH); // this row data is just for skipping everything except Ids
+    Long *listId;
     FILE *taskListsFile = startReadingTaskListsFileData(containerBoard->id);
-    Long listId;
     if (taskListsFile)
     {
 
@@ -155,7 +155,9 @@ List *getTaskListsIds(Board *containerBoard)
             // the second call to fgets will read the credential line
             const string id = (string)strtok(row, COLUMN_DELIMITER); // split the text by COLUMN_DELIMITER[,] character
             string conversionError;
-            listId = strtoull(id, &conversionError, 10); // convert string to Long(unsigned long long)
+            listId = (Long*) calloc(sizeof(Long), 1); // we want to create a LinkList with the data of Long *
+            // we should allocate memory to it, otherwise the data will not save properly in out LinkList
+            *listId = strtoull(id, &conversionError, 10); // convert string to Long(unsigned long long)
             // skip other columns, go to next row for reading next id
             // this one is used just to check values are correct
             if (!id || !listId || *conversionError)
@@ -165,7 +167,7 @@ List *getTaskListsIds(Board *containerBoard)
                                  "It seems the data related some of this list rows are corrupted or modified! These data have been skipped while reading");
                 continue;
             }
-            List_add(taskListIds, &listId); // add long pointer to the list
+            List_add(taskListIds, listId); // add long pointer to the list
         }
     }
 
