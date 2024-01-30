@@ -107,11 +107,12 @@ List *getTasks(TaskList *containerTaskList)
             const string boardId = (string)strtok(NULL, COLUMN_DELIMITER); // the boardId is also in containerTaskList->Board->id
             const string ownerId = (string)strtok(NULL, COLUMN_DELIMITER); // the ownerId is also in containerTaskList->Board->ownerId
             Date deadline;
+            string conversionError;
             // this one is used just to check values are correct
             title = trimColumnValue(title);
             if (!id || !title || !priority || !strDeadline ||
                 sscanf(strDeadline, "%d-%d-%d", &deadline.tm_year, &deadline.tm_mon, &deadline.tm_mday) != 3 || !ownerId || !boardId ||
-                atol(boardId) != containerTaskList->board->id || atol(ownerId) != containerTaskList->board->ownerId)
+                strtoull(boardId, &conversionError, 10) != containerTaskList->board->id || strtoull(ownerId, &conversionError, 10) != containerTaskList->board->ownerId)
             {                         // checks all possible errors, and also converts deadline from string to Date(struct tm)
                 if (!feof(tasksFile)) // if file is not ended and this condition happended, then the data of this Task is corrupted
                     Task_failure(nextTask, "It seems the data related to this task is corrupted or modified!");
@@ -121,11 +122,11 @@ List *getTasks(TaskList *containerTaskList)
             // each task list occupies to lines
             // first line is its id and the second is the title
             strncpy(nextTask->title, title, MAX_TITLE_LENGTH);
-            nextTask->id = atol(id); // convert read id to Long
+            nextTask->id = strtoull(id, &conversionError, 10); // convert read id to Long
             nextTask->priority = priority[0];
             nextTask->deadline = deadline;
             nextTask->taskList = containerTaskList;
-            if (!nextTask->id)
+            if (!nextTask->id || *conversionError)
             {
                 Task_failure(nextTask, "Could not read the id property of this Task successfully!");
                 continue; // set the error message of this one and continue reading the next one (cause the file is not ended yet.)
@@ -207,8 +208,8 @@ string Priority_toString(Priority priority)
 
 void Task_print(Task *task)
 {
-    printf("Your selected Task:\n\n  Id%6s\t\tPriority\t\tDeadline%2s\t\tTitle\n", " ", " ");
+    printf("Your selected Task:\n\n    Id%9s\t\tPriority\t\tDeadline%2s\t\tTitle\n", " ", " ");
     PRINT_DASH_ROW();
-    printf("%10llu\t\t%8s\t\t%04d-%02d-%02d\t\t%s\n", task->id, Priority_toString(task->priority),
+    printf("%15llu\t\t%8s\t\t%04d-%02d-%02d\t\t%s\n", task->id, Priority_toString(task->priority),
            task->deadline.tm_year, task->deadline.tm_mon, task->deadline.tm_mday, task->title);
 }
