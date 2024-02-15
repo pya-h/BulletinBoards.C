@@ -1,7 +1,7 @@
 <h1>Bulletin Boards Project</h1>
 <h3>Language: Old School C :)</h3>
 
-<p>This is a College Computer Major Project. I've implemented the same project specification in 3 different variation.</p>
+<p>This is a College Computer Major Project. I've implemented the same project specification in 3 different variations.</p>
 <p>The variations were deliberately written to be as different from each other as possible.</p>
 <p>They are coded in 3 separate variations, with 3 different styles, with 3 different approaches and algorithms,
 with 3 different naming conventions, 3 different header structures, and etc.<p>
