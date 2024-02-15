@@ -1,7 +1,7 @@
 <h1>Bulletin Boards Project</h1>
 <h3>Language: Old School C :)</h3>
 
-<p>This is a College Computer Major Project. I've coded this single project for 3 different person.</p>
+<p>This is a College Computer Major Project. I've coded this single project for 3 different persons.</p>
 <p>The actual purpose was that variations must be in a way, that no one find out they are all done by one person [me!].</p>
 <p> So they are coded in 3 different separate variations, with 3 different styles, with 3 different approaches and algorithms,
 with 3 different naming conventions, 3 different header structures, and etc.<p>
